@@ -1,0 +1,12 @@
+services:
+  database:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ecommerce
+    ports:
+      - 5432:5432
+    volumes:
+      - ./volumes/database:/var/lib/postgresql/data
+  
