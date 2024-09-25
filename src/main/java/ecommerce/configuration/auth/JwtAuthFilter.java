@@ -24,8 +24,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final Algorithm algorithm;
@@ -52,7 +54,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             auth = this.tryParseAuthorizationHeader(authorizationHeader);
         } catch (JwtAuthException e) {
-            // TODO: log some warning
+            log.warn("failed to parse JWT: {}", e.getMessage());
             auth = null;
         }
 
