@@ -4,6 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 todo.txt
+/logs
 
 ### STS ###
 .apt_generated
@@ -35,4 +36,4 @@ build/
 
 
 # Docker volumes
-./volumes
+/volumes
