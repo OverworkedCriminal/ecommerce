@@ -54,25 +54,25 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     ) throws IOException, ServletException {
         final String authorizationHeader = request.getHeader("Authorization");
 
-        UsernamePasswordAuthenticationToken auth;
         try {
-            auth = this.tryParseAuthorizationHeader(authorizationHeader);
+            final var auth = this.tryParseAuthorizationHeader(authorizationHeader);
             if (auth != null) {
                 log.debug("user authenticated [user={}]", auth.getName());
             }
-        } catch (JwtAuthException e) {
-            log.warn("failed to parse JWT: {}", e.getMessage());
-            auth = null;
-        }
 
-        SecurityContextHolder
+            SecurityContextHolder
                 .getContext()
                 .setAuthentication(auth);
 
-        filterChain.doFilter(request, response);
+            filterChain.doFilter(request, response);
+
+        } catch (JwtAuthException e) {
+            log.warn("failed to parse JWT: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        }
     }
 
-    protected UsernamePasswordAuthenticationToken tryParseAuthorizationHeader(
+    private UsernamePasswordAuthenticationToken tryParseAuthorizationHeader(
             String authorizationHeader
     ) throws IOException, ServletException {
         if (authorizationHeader == null) {
