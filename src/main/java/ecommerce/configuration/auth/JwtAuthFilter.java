@@ -57,6 +57,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         UsernamePasswordAuthenticationToken auth;
         try {
             auth = this.tryParseAuthorizationHeader(authorizationHeader);
+            if (auth != null) {
+                log.debug("user authenticated [user={}]", auth.getName());
+            }
         } catch (JwtAuthException e) {
             log.warn("failed to parse JWT: {}", e.getMessage());
             auth = null;

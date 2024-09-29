@@ -2,6 +2,7 @@ package ecommerce.configuration.logs;
 
 import java.io.IOException;
 
+import org.slf4j.MDC;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.lang.NonNull;
@@ -12,29 +13,35 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Filter that assigns UUID identifier to every request's log
+ */
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE + 1)
-@Slf4j
-public class LogsFilter extends OncePerRequestFilter {
+@Order(Ordered.HIGHEST_PRECEDENCE)
+public class LogsRequestIdFilter extends OncePerRequestFilter {
+
+    private final static String REQUEST_ID = "requestId";
 
     @Override
     protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
+        @NonNull HttpServletRequest request,
+        @NonNull HttpServletResponse response,
+        @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        final String method = request.getMethod();
-        final String uri = request.getRequestURI();
+        final var requestId = request.getRequestId();
+        final var mdcText = new StringBuilder()
+            .append("[requestId=")
+            .append(requestId)
+            .append("]")
+            .toString();
 
-        log.debug("started processing request [method={} uri={}]", method, uri);
+        MDC.put(REQUEST_ID, mdcText);
 
         try {
             filterChain.doFilter(request, response);
         } finally {
-            final int status = response.getStatus();
-            log.debug("finished processing request [status={}]", status);
+            MDC.remove(REQUEST_ID);
         }
     }
 
