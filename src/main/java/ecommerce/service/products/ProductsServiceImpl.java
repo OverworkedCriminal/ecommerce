@@ -4,6 +4,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import ecommerce.dto.products.InProduct;
+import ecommerce.dto.products.InProductsFilters;
 import ecommerce.dto.products.OutProduct;
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
@@ -21,17 +22,20 @@ public class ProductsServiceImpl implements ProductsService {
 
     @Override
     public OutPage<OutProduct> getProducts(
+        InProductsFilters filters,
         InPagination pagination
     ) {
+        log.trace("{}", filters);
         log.trace("{}", pagination);
 
         final var pageRequest = PageRequest.of(
             pagination.pageIdx(),
             pagination.pageSize()
         );
+        final var filtersSpecification = filters.intoSpecification();
 
         final var products = productsRepository
-            .findAll(pageRequest)
+            .findAll(filtersSpecification, pageRequest)
             .map(OutProduct::from);
         log.info("found products count={}", products.getSize());
 

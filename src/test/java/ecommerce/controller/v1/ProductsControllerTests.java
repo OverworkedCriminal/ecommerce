@@ -49,7 +49,7 @@ public class ProductsControllerTests {
 
         Mockito
             .verify(productsService, Mockito.never())
-            .getProducts(Mockito.any());
+            .getProducts(Mockito.any(), Mockito.any());
     }
 
     @Test
@@ -65,7 +65,23 @@ public class ProductsControllerTests {
 
         Mockito
             .verify(productsService, Mockito.never())
-            .getProducts(Mockito.any());
+            .getProducts(Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    public void getProducts_nameBlank() throws Exception {
+        final int pageSize = 10;
+        final int pageIdx = 1;
+        final String url = "/api/v1/products?pageSize=%d&pageIdx=%d&name="
+            .formatted(pageSize, pageIdx);
+
+        mvc
+            .perform(MockMvcRequestBuilders.get(url))
+            .andExpect(ControllerTestUtils.expectStatusCode(400));
+
+        Mockito
+            .verify(productsService, Mockito.never())
+            .getProducts(Mockito.any(), Mockito.any());
     }
 
     //#endregion

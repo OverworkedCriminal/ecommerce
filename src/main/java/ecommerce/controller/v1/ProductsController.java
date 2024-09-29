@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.dto.products.InProduct;
+import ecommerce.dto.products.InProductsFilters;
 import ecommerce.dto.products.OutProduct;
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
@@ -26,9 +27,10 @@ public class ProductsController {
 
     @GetMapping("")
     public OutPage<OutProduct> getProducts(
-        @Validated @ModelAttribute InPagination pagination
+        @Validated @ModelAttribute InPagination pagination,
+        @Validated @ModelAttribute InProductsFilters filters
     ) {
-        return productsService.getProducts(pagination);
+        return productsService.getProducts(filters, pagination);
     }
 
     @PostMapping("")
