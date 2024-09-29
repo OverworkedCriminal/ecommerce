@@ -8,6 +8,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import ecommerce.dto.validation.optionalnotblank.OptionalNotBlank;
 import ecommerce.repository.products.entity.Product;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 
 public record InProductsFilters(
@@ -17,14 +18,20 @@ public record InProductsFilters(
     public Specification<Product> intoSpecification() {
         return (root, query, cb) -> {
             final var predicates = Stream.of(
-                    this.name.map(name -> cb.equal(
-                        root.get("name"),
-                        name
-                    ))
-                )
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
+                this.name.map(name -> {
+                    final Path<String> path = root.get("name");
+                    final Predicate predicate = cb
+                        .like(
+                            cb.upper(path),
+                            name.toUpperCase()
+                        );
+
+                    return predicate;
+                })
+            )
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
 
             if (predicates.isEmpty()) {
                 return cb.conjunction();
