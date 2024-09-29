@@ -1,0 +1,55 @@
+package ecommerce.service.products;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+
+import ecommerce.dto.products.InProduct;
+import ecommerce.dto.products.OutProduct;
+import ecommerce.dto.shared.InPagination;
+import ecommerce.dto.shared.OutPage;
+import ecommerce.repository.products.ProductsRepository;
+import ecommerce.repository.products.entity.Product;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class ProductsServiceImpl implements ProductsService {
+
+    private final ProductsRepository productsRepository;
+
+    @Override
+    public OutPage<OutProduct> getProducts(
+        InPagination pagination
+    ) {
+        log.trace("{}", pagination);
+
+        final var pageRequest = PageRequest.of(
+            pagination.pageIdx(),
+            pagination.pageSize()
+        );
+
+        final var products = productsRepository
+            .findAll(pageRequest)
+            .map(OutProduct::from);
+        final var productsPage = OutPage.from(products);
+
+        return productsPage;
+    }
+
+    @Override
+    public OutProduct postProduct(InProduct product) {
+        log.trace("{}", product);
+
+        final var entity = Product.builder()
+            .name(product.name())
+            .description(product.description())
+            .build();
+
+        final var savedEntity = productsRepository.save(entity);
+        final var savedProduct = OutProduct.from(savedEntity);
+
+        return savedProduct;
+    }
+}
