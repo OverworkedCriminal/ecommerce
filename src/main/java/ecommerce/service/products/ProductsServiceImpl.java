@@ -37,7 +37,7 @@ public class ProductsServiceImpl implements ProductsService {
         final var products = productsRepository
             .findAll(filtersSpecification, pageRequest)
             .map(OutProduct::from);
-        log.info("found products count={}", products.getSize());
+        log.info("found products count={}", products.getNumberOfElements());
 
         final var productsPage = OutPage.from(products);
 
