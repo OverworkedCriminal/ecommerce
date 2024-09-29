@@ -33,6 +33,8 @@ public class ProductsServiceImpl implements ProductsService {
         final var products = productsRepository
             .findAll(pageRequest)
             .map(OutProduct::from);
+        log.info("found products count={}", products.getSize());
+
         final var productsPage = OutPage.from(products);
 
         return productsPage;
@@ -48,6 +50,8 @@ public class ProductsServiceImpl implements ProductsService {
             .build();
 
         final var savedEntity = productsRepository.save(entity);
+        log.info("created product with id={}", savedEntity.getId());
+
         final var savedProduct = OutProduct.from(savedEntity);
 
         return savedProduct;
