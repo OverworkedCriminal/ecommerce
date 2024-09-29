@@ -7,7 +7,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -20,7 +19,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtAuthConfiguration {
 
     @Bean
-    public SecurityFilterChain filterChain(
+    public SecurityFilterChain securityFilterChain(
         HttpSecurity http,
         JwtAuthFilter jwtAuthFilter
     ) throws Exception {
@@ -41,10 +40,6 @@ public class JwtAuthConfiguration {
                     .authenticationEntryPoint((request, response, exception) ->
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED)
                     )
-            )
-            .addFilterBefore(
-                jwtAuthFilter,
-                UsernamePasswordAuthenticationFilter.class
             )
             .build();
     }
