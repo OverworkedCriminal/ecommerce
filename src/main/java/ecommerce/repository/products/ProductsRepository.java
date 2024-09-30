@@ -1,5 +1,7 @@
 package ecommerce.repository.products;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -10,5 +12,5 @@ extends
     JpaRepository<Product, Long>,
     JpaSpecificationExecutor<Product>
 {
-    
+    Optional<Product> findByIdAndActiveTrue(long id);
 }

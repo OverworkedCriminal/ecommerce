@@ -8,8 +8,10 @@ import ecommerce.dto.products.InProductsFilters;
 import ecommerce.dto.products.OutProduct;
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
+import ecommerce.exception.NotFoundException;
 import ecommerce.repository.products.ProductsRepository;
 import ecommerce.repository.products.entity.Product;
+import jakarta.persistence.criteria.Path;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,10 +34,15 @@ public class ProductsServiceImpl implements ProductsService {
             pagination.pageIdx(),
             pagination.pageSize()
         );
-        final var filtersSpecification = filters.intoSpecification();
+        final var specification = filters
+            .intoSpecification()
+            .and((root, query, cb) -> {
+                final Path<Boolean> path = root.get("active");
+                return cb.equal(path, true);
+            });
 
         final var products = productsRepository
-            .findAll(filtersSpecification, pageRequest)
+            .findAll(specification, pageRequest)
             .map(OutProduct::from);
         log.info("found products count={}", products.getNumberOfElements());
 
@@ -49,6 +56,7 @@ public class ProductsServiceImpl implements ProductsService {
         log.trace("{}", product);
 
         final var entity = Product.builder()
+            .active(true)
             .name(product.name())
             .description(product.description())
             .price(product.price())
@@ -60,5 +68,22 @@ public class ProductsServiceImpl implements ProductsService {
         final var savedProduct = OutProduct.from(savedEntity);
 
         return savedProduct;
+    }
+
+    @Override
+    public void deleteProduct(long id) {
+        log.trace("id={}", id);
+
+        final var product = productsRepository
+            .findByIdAndActiveTrue(id)
+            .orElseThrow(() -> {
+                final var message = "product with id=%s does not exist".formatted(id);
+                return new NotFoundException(message);
+            });
+
+        product.setActive(false);
+
+        productsRepository.save(product);
+        log.info("deleted product with id={}", id);
     }
 }

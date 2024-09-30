@@ -10,4 +10,6 @@ public interface ProductsService {
     OutPage<OutProduct> getProducts(InProductsFilters filters, InPagination pagination);
 
     OutProduct postProduct(InProduct product);
+
+    void deleteProduct(long id);
 }

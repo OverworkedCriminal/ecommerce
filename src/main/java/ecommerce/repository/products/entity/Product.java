@@ -25,6 +25,12 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    /**
+     * when false, product was deleted
+     */
+    @Nonnull
+    private boolean active;
+
     @Nonnull
     private String name;
     @Nonnull

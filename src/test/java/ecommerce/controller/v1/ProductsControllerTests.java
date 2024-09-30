@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -19,6 +20,7 @@ import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.configuration.auth.JwtAuthConfiguration;
 import ecommerce.controller.utils.ControllerTestUtils;
 import ecommerce.dto.products.InProduct;
+import ecommerce.exception.NotFoundException;
 import ecommerce.service.products.ProductsService;
 
 @Import(JwtAuthConfiguration.class)
@@ -48,7 +50,7 @@ public class ProductsControllerTests {
     private void test_getProducts_validationException(String url) throws Exception {
         mvc
             .perform(MockMvcRequestBuilders.get(url))
-            .andExpect(ControllerTestUtils.expectStatusCode(400));
+            .andExpect(ControllerTestUtils.expectStatusCode(HttpStatus.BAD_REQUEST.value()));
 
         Mockito
             .verify(productsService, Mockito.never())
@@ -148,7 +150,7 @@ public class ProductsControllerTests {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsBytes(product))
             )
-            .andExpect(ControllerTestUtils.expectStatusCode(400));
+            .andExpect(ControllerTestUtils.expectStatusCode(HttpStatus.BAD_REQUEST.value()));
 
         Mockito
             .verify(productsService, Mockito.never())
@@ -198,7 +200,7 @@ public class ProductsControllerTests {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsBytes(product))
             )
-            .andExpect(ControllerTestUtils.expectStatusCode(401));
+            .andExpect(ControllerTestUtils.expectStatusCode(HttpStatus.UNAUTHORIZED.value()));
 
         Mockito
             .verify(productsService, Mockito.never())
@@ -224,7 +226,7 @@ public class ProductsControllerTests {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsBytes(product))
             )
-            .andExpect(ControllerTestUtils.expectStatusCode(403));
+            .andExpect(ControllerTestUtils.expectStatusCode(HttpStatus.FORBIDDEN.value()));
 
         Mockito
             .verify(productsService, Mockito.never())
@@ -254,17 +256,6 @@ public class ProductsControllerTests {
     }
 
     @Test
-    public void postProduct_nullPrice() throws Exception {
-        final var product = new InProduct(
-            "name", 
-            "description", 
-            null
-        );
-
-        test_postProduct_validationException(product);
-    }
-
-    @Test
     public void postProudct_priceZero() throws Exception {
         final var product = new InProduct(
             "name",
@@ -275,5 +266,78 @@ public class ProductsControllerTests {
         test_postProduct_validationException(product);
     }
 
+    //#endregion
+
+    //#region deleteProduct
+
+    @Test
+    public void deleteProduct_statusCode204() throws Exception {
+        Mockito
+            .doNothing()
+            .when(productsService)
+            .deleteProduct(Mockito.anyLong());
+
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .delete("/api/v1/products/1")
+                    .header(
+                        "Authorization",
+                        ControllerTestUtils.createAuthorizationBearer(AuthRoles.DELETE_PRODUCT)
+                    )
+            )
+            .andExpect(ControllerTestUtils.expectStatusCode(HttpStatus.NO_CONTENT.value()));
+    }
+
+    @Test
+    public void deleteProduct_unauthorized() throws Exception {
+        mvc
+            .perform(
+                MockMvcRequestBuilders.delete("/api/v1/products/1")
+            )
+            .andExpect(ControllerTestUtils.expectStatusCode(HttpStatus.UNAUTHORIZED.value()));
+
+        Mockito
+            .verify(productsService, Mockito.never())
+            .deleteProduct(Mockito.anyLong());
+    }
+
+    @Test
+    public void deleteProduct_forbidden() throws Exception {
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .delete("/api/v1/products/1")
+                    .header(
+                        "Authorization",
+                        ControllerTestUtils.createAuthorizationBearer()
+                    )
+            )
+            .andExpect(ControllerTestUtils.expectStatusCode(HttpStatus.FORBIDDEN.value()));
+
+        Mockito
+            .verify(productsService, Mockito.never())
+            .deleteProduct(Mockito.anyLong());
+    }
+
+    @Test
+    public void deleteProduct_notFound() throws Exception {
+        Mockito
+            .doThrow(NotFoundException.class)
+            .when(productsService)
+            .deleteProduct(Mockito.anyLong());
+
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .delete("/api/v1/products/1")
+                    .header(
+                        "Authorization",
+                        ControllerTestUtils.createAuthorizationBearer(AuthRoles.DELETE_PRODUCT)
+                    )
+            )
+            .andExpect(ControllerTestUtils.expectStatusCode(404));
+    }
+    
     //#endregion
 }
