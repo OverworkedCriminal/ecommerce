@@ -254,6 +254,17 @@ public class ProductsControllerTests {
     }
 
     @Test
+    public void postProduct_nullPrice() throws Exception {
+        final var product = new InProduct(
+            "name", 
+            "description", 
+            null
+        );
+
+        test_postProduct_validationException(product);
+    }
+
+    @Test
     public void postProudct_priceZero() throws Exception {
         final var product = new InProduct(
             "name",
