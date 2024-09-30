@@ -1,4 +1,4 @@
-package ecommerce.dto.validation.optionalnotblank;
+package ecommerce.dto.validation.nullablenotblank;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,9 +10,9 @@ import jakarta.validation.Payload;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = OptionalNotBlankValidator.class)
-public @interface OptionalNotBlank {
-    String message() default "optional field must not be blank";
+@Constraint(validatedBy = NullableNotBlankValidator.class)
+public @interface NullableNotBlank {
+    String message() default "field must not be blank";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

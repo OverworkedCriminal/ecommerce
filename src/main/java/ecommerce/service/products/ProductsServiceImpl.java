@@ -51,6 +51,7 @@ public class ProductsServiceImpl implements ProductsService {
         final var entity = Product.builder()
             .name(product.name())
             .description(product.description())
+            .price(product.price())
             .build();
 
         final var savedEntity = productsRepository.save(entity);

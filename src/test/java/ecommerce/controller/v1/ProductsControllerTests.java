@@ -1,5 +1,7 @@
 package ecommerce.controller.v1;
 
+import java.math.BigDecimal;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,13 +38,14 @@ public class ProductsControllerTests {
 
     //#region getProducts
 
-    @Test
-    public void getProducts_pageSizeLessThan1() throws Exception {
-        final int pageSize = 0;
-        final int pageIdx = 2;
-        final String url = "/api/v1/products?pageSize=%d&pageIdx=%d"
-            .formatted(pageSize, pageIdx);
-
+    /**
+     * Parametrized test asserts status code 400 is returned for given url
+     * and service function is never called
+     * 
+     * @param url
+     * @throws Exception
+     */
+    private void test_getProducts_validationException(String url) throws Exception {
         mvc
             .perform(MockMvcRequestBuilders.get(url))
             .andExpect(ControllerTestUtils.expectStatusCode(400));
@@ -50,6 +53,32 @@ public class ProductsControllerTests {
         Mockito
             .verify(productsService, Mockito.never())
             .getProducts(Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    public void getProducts_noFilters() throws Exception {
+        final int pageSize = 10;
+        final int pageIdx = 2;
+        final String url = "/api/v1/products?pageSize=%d&pageIdx=%d"
+            .formatted(pageSize, pageIdx);
+
+        mvc
+            .perform(MockMvcRequestBuilders.get(url))
+            .andExpect(ControllerTestUtils.expectStatusCode(200));
+
+        Mockito
+            .verify(productsService, Mockito.times(1))
+            .getProducts(Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    public void getProducts_pageSizeLessThan1() throws Exception {
+        final int pageSize = 0;
+        final int pageIdx = 2;
+        final String url = "/api/v1/products?pageSize=%d&pageIdx=%d"
+            .formatted(pageSize, pageIdx);
+
+        test_getProducts_validationException(url);
     }
 
     @Test
@@ -59,13 +88,7 @@ public class ProductsControllerTests {
         final String url = "/api/v1/products?pageSize=%d&pageIdx=%d"
             .formatted(pageSize, pageIdx);
 
-        mvc
-            .perform(MockMvcRequestBuilders.get(url))
-            .andExpect(ControllerTestUtils.expectStatusCode(400));
-
-        Mockito
-            .verify(productsService, Mockito.never())
-            .getProducts(Mockito.any(), Mockito.any());
+        test_getProducts_validationException(url);
     }
 
     @Test
@@ -75,24 +98,97 @@ public class ProductsControllerTests {
         final String url = "/api/v1/products?pageSize=%d&pageIdx=%d&name="
             .formatted(pageSize, pageIdx);
 
-        mvc
-            .perform(MockMvcRequestBuilders.get(url))
-            .andExpect(ControllerTestUtils.expectStatusCode(400));
+        test_getProducts_validationException(url);
+    }
 
-        Mockito
-            .verify(productsService, Mockito.never())
-            .getProducts(Mockito.any(), Mockito.any());
+    @Test
+    public void getProducts_minPriceBelowZero() throws Exception {
+        final int pageSize = 10;
+        final int pageIdx = 1;
+        final BigDecimal minPrice = new BigDecimal(-0.01);
+        final String url = "/api/v1/products?pageSize=%d&pageIdx=%d&minPrice=%.2f"
+            .formatted(pageSize, pageIdx, minPrice);
+
+        test_getProducts_validationException(url);
+    }
+
+    @Test
+    public void getProducts_maxPriceBelowZero() throws Exception {
+        final int pageSize = 10;
+        final int pageIdx = 1;
+        final BigDecimal maxPrice = new BigDecimal(-0.01);
+        final String url = "/api/v1/products?pageSize=%d&pageIdx=%d&maxPrice=%.2f"
+            .formatted(pageSize, pageIdx, maxPrice);
+
+        test_getProducts_validationException(url);
     }
 
     //#endregion
 
     //#region postProduct
 
+    /**
+     * Parametrized test asserts status code 400 is returned for given product
+     * and service function is never called
+     * 
+     * @param product
+     * @throws Exception
+     */
+    private void test_postProduct_validationException(InProduct product) throws Exception {
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .post("/api/v1/products")
+                    .header(
+                        "Authorization",
+                        ControllerTestUtils.createAuthorizationBearer(
+                            AuthRoles.CREATE_PRODUCT
+                        )
+                    )
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(product))
+            )
+            .andExpect(ControllerTestUtils.expectStatusCode(400));
+
+        Mockito
+            .verify(productsService, Mockito.never())
+            .postProduct(Mockito.any());
+    }
+
+    @Test
+    public void postProduct_success() throws Exception {
+        final var product = new InProduct(
+            "name",
+            "description",
+            new BigDecimal(10.00)
+        );
+
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .post("/api/v1/products")
+                    .header(
+                        "Authorization",
+                        ControllerTestUtils.createAuthorizationBearer(
+                            AuthRoles.CREATE_PRODUCT
+                        )
+                    )
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(product))
+            )
+            .andExpect(ControllerTestUtils.expectStatusCode(200));
+
+        Mockito
+            .verify(productsService, Mockito.times(1))
+            .postProduct(Mockito.any());
+    }
+
     @Test
     public void postProduct_unauthorized() throws Exception {
         final var product = new InProduct(
             "name",
-            "description"
+            "description",
+            new BigDecimal(10.00)
         );
 
         mvc
@@ -113,7 +209,8 @@ public class ProductsControllerTests {
     public void postProduct_forbidden() throws Exception {
         final var product = new InProduct(
             "name",
-            "description"
+            "description",
+            new BigDecimal(10.00)
         );
 
         mvc
@@ -138,54 +235,33 @@ public class ProductsControllerTests {
     public void postProduct_blankName() throws Exception {
         final var product = new InProduct(
             "",
-            "description"
+            "description",
+            new BigDecimal(10.00)
         );
 
-        mvc
-            .perform(
-                MockMvcRequestBuilders
-                    .post("/api/v1/products")
-                    .header(
-                        "Authorization",
-                        ControllerTestUtils.createAuthorizationBearer(
-                            AuthRoles.CREATE_PRODUCT
-                        )
-                    )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsBytes(product))
-            )
-            .andExpect(ControllerTestUtils.expectStatusCode(400));
-
-        Mockito
-            .verify(productsService, Mockito.never())
-            .postProduct(Mockito.any());
+        test_postProduct_validationException(product);
     }
 
     @Test
     public void postProduct_blankDescription() throws Exception {
         final var product = new InProduct(
             "name",
-            ""
+            "",
+            new BigDecimal(10.00)
         );
 
-        mvc
-            .perform(
-                MockMvcRequestBuilders
-                    .post("/api/v1/products")
-                    .header(
-                        "Authorization",
-                        ControllerTestUtils.createAuthorizationBearer(
-                            AuthRoles.CREATE_PRODUCT
-                        )
-                    )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsBytes(product))
-            )
-            .andExpect(ControllerTestUtils.expectStatusCode(400));
+        test_postProduct_validationException(product);
+    }
 
-        Mockito
-            .verify(productsService, Mockito.never())
-            .postProduct(Mockito.any());
+    @Test
+    public void postProudct_priceZero() throws Exception {
+        final var product = new InProduct(
+            "name",
+            "description",
+            BigDecimal.ZERO
+        );
+
+        test_postProduct_validationException(product);
     }
 
     //#endregion
