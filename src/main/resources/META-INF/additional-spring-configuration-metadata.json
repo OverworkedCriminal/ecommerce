@@ -13,5 +13,10 @@
     "name": "ecommerce.logging.level.file",
     "type": "java.lang.String",
     "description": "logs threshold for file logs (TRACE is recommended)"
+  },
+  {
+    "name": "ecommerce.openapi.url",
+    "type": "java.lang.String",
+    "description": "OpenAPI server url"
   }
 ]}
