@@ -1,6 +1,7 @@
 package ecommerce.service.products;
 
 import ecommerce.dto.products.InProduct;
+import ecommerce.dto.products.InProductPatch;
 import ecommerce.dto.products.InProductsFilters;
 import ecommerce.dto.products.OutProduct;
 import ecommerce.dto.shared.InPagination;
@@ -12,4 +13,6 @@ public interface ProductsService {
     OutProduct postProduct(InProduct product);
 
     void deleteProduct(long id);
+
+    void patchProduct(long id, InProductPatch productPatch);
 }

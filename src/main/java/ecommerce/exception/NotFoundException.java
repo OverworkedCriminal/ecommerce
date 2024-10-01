@@ -6,4 +6,9 @@ public class NotFoundException extends RuntimeException {
         super(message);
     }
 
+    public static NotFoundException product(long id) {
+        final var message = "product with id=%d not found".formatted(id);
+        return new NotFoundException(message);
+    }
+
 }

@@ -20,6 +20,7 @@ import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.configuration.auth.JwtAuthConfiguration;
 import ecommerce.controller.utils.ControllerTestUtils;
 import ecommerce.dto.products.InProduct;
+import ecommerce.dto.products.InProductPatch;
 import ecommerce.exception.NotFoundException;
 import ecommerce.service.products.ProductsService;
 
@@ -50,7 +51,7 @@ public class ProductsControllerTests {
     private void test_getProducts_validationException(String url) throws Exception {
         mvc
             .perform(MockMvcRequestBuilders.get(url))
-            .andExpect(ControllerTestUtils.expectStatusCode(HttpStatus.BAD_REQUEST.value()));
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.BAD_REQUEST));
 
         Mockito
             .verify(productsService, Mockito.never())
@@ -66,7 +67,7 @@ public class ProductsControllerTests {
 
         mvc
             .perform(MockMvcRequestBuilders.get(url))
-            .andExpect(ControllerTestUtils.expectStatusCode(200));
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.OK));
 
         Mockito
             .verify(productsService, Mockito.times(1))
@@ -150,7 +151,7 @@ public class ProductsControllerTests {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsBytes(product))
             )
-            .andExpect(ControllerTestUtils.expectStatusCode(HttpStatus.BAD_REQUEST.value()));
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.BAD_REQUEST));
 
         Mockito
             .verify(productsService, Mockito.never())
@@ -178,7 +179,7 @@ public class ProductsControllerTests {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsBytes(product))
             )
-            .andExpect(ControllerTestUtils.expectStatusCode(200));
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.OK));
 
         Mockito
             .verify(productsService, Mockito.times(1))
@@ -200,7 +201,7 @@ public class ProductsControllerTests {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsBytes(product))
             )
-            .andExpect(ControllerTestUtils.expectStatusCode(HttpStatus.UNAUTHORIZED.value()));
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.UNAUTHORIZED));
 
         Mockito
             .verify(productsService, Mockito.never())
@@ -226,7 +227,7 @@ public class ProductsControllerTests {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsBytes(product))
             )
-            .andExpect(ControllerTestUtils.expectStatusCode(HttpStatus.FORBIDDEN.value()));
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.FORBIDDEN));
 
         Mockito
             .verify(productsService, Mockito.never())
@@ -286,7 +287,7 @@ public class ProductsControllerTests {
                         ControllerTestUtils.createAuthorizationBearer(AuthRoles.DELETE_PRODUCT)
                     )
             )
-            .andExpect(ControllerTestUtils.expectStatusCode(HttpStatus.NO_CONTENT.value()));
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NO_CONTENT));
     }
 
     @Test
@@ -295,7 +296,7 @@ public class ProductsControllerTests {
             .perform(
                 MockMvcRequestBuilders.delete("/api/v1/products/1")
             )
-            .andExpect(ControllerTestUtils.expectStatusCode(HttpStatus.UNAUTHORIZED.value()));
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.UNAUTHORIZED));
 
         Mockito
             .verify(productsService, Mockito.never())
@@ -313,7 +314,7 @@ public class ProductsControllerTests {
                         ControllerTestUtils.createAuthorizationBearer()
                     )
             )
-            .andExpect(ControllerTestUtils.expectStatusCode(HttpStatus.FORBIDDEN.value()));
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.FORBIDDEN));
 
         Mockito
             .verify(productsService, Mockito.never())
@@ -336,8 +337,143 @@ public class ProductsControllerTests {
                         ControllerTestUtils.createAuthorizationBearer(AuthRoles.DELETE_PRODUCT)
                     )
             )
-            .andExpect(ControllerTestUtils.expectStatusCode(404));
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));
     }
     
+    //#endregion
+
+    //#region patchProduct
+
+    /**
+     * Parametrized test that checks authorization.
+     * When authorizationHeaderValue is null Authorization header is not added
+     * 
+     * @param expectedStatus
+     * @param authorizationHeaderValue
+     * @throws Exception
+     */
+    private void test_patchProduct_authorization(
+        HttpStatus expectedStatus,
+        String authorizationHeaderValue
+    ) throws Exception {
+        Mockito
+            .doNothing()
+            .when(productsService)
+            .patchProduct(Mockito.anyLong(), Mockito.any());
+
+        final var patch = new InProductPatch(
+            "name",
+            "description",
+            new BigDecimal(14.99)
+        );
+
+        var requestBuilder = MockMvcRequestBuilders
+            .patch("/api/v1/products/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsBytes(patch));
+        if (authorizationHeaderValue != null) {
+            requestBuilder = requestBuilder.header("Authorization", authorizationHeaderValue);
+        }
+
+        mvc
+            .perform(requestBuilder)
+            .andExpect(ControllerTestUtils.expectStatus(expectedStatus));
+    }
+
+    /**
+     * Parametrized test that checks whether validation returns BAD_REQUEST
+     * 
+     * @param patch
+     * @throws Exception
+     */
+    private void test_patchProduct_validation(InProductPatch patch) throws Exception {
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .patch("/api/v1/products/1")
+                    .header("Authorization", ControllerTestUtils.createAuthorizationBearer(AuthRoles.UPDATE_PRODUCT))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(patch))
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.BAD_REQUEST));
+
+        Mockito
+            .verify(productsService, Mockito.never())
+            .patchProduct(Mockito.anyLong(), Mockito.any());
+    }
+
+    @Test
+    public void patchProduct_statusCode204_roleCreateProduct() throws Exception {
+        test_patchProduct_authorization(
+            HttpStatus.NO_CONTENT,
+            ControllerTestUtils.createAuthorizationBearer(AuthRoles.CREATE_PRODUCT)
+        );
+    }
+
+    @Test
+    public void patchProduct_statusCode204_roleUpdateProduct() throws Exception {
+        test_patchProduct_authorization(
+            HttpStatus.NO_CONTENT,
+            ControllerTestUtils.createAuthorizationBearer(AuthRoles.UPDATE_PRODUCT)
+        );
+    }
+
+    @Test
+    public void patchProduct_unauthorized() throws Exception {
+        test_patchProduct_authorization(
+            HttpStatus.UNAUTHORIZED,
+            null
+        );
+    }
+
+    @Test
+    public void patchProduct_forbidden() throws Exception {
+        test_patchProduct_authorization(
+            HttpStatus.FORBIDDEN,
+            ControllerTestUtils.createAuthorizationBearer()
+        );
+    }
+
+    @Test
+    public void patchProduct_nameBlank() throws Exception {
+        final var patch = new InProductPatch("", null, null);
+
+        test_patchProduct_validation(patch);
+    }
+
+    @Test
+    public void patchProduct_descriptionBlank() throws Exception {
+        final var patch = new InProductPatch(null, "", null);
+
+        test_patchProduct_validation(patch);
+    }
+
+    @Test
+    public void patchProduct_priceZero() throws Exception {
+        final var patch = new InProductPatch(null, null, BigDecimal.ZERO);
+
+        test_patchProduct_validation(patch);
+    }
+
+    @Test
+    public void patchProduct_notFound() throws Exception {
+        final var patch = new InProductPatch("name", "description", new BigDecimal(24.99));
+        
+        Mockito
+            .doThrow(NotFoundException.class)
+            .when(productsService)
+            .patchProduct(Mockito.anyLong(), Mockito.any());
+
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .patch("/api/v1/products/1")
+                    .header("Authorization", ControllerTestUtils.createAuthorizationBearer(AuthRoles.UPDATE_PRODUCT))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(patch))
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));
+    }
+
     //#endregion
 }

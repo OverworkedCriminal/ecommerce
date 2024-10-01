@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import com.auth0.jwt.JWT;
@@ -20,11 +21,11 @@ public class ControllerTestUtils {
      * @return matcher that checks whether statusCode from response
      * equals passed argument
      */
-    public static ResultMatcher expectStatusCode(int statusCode) {
+    public static ResultMatcher expectStatus(HttpStatus status) {
         return result -> {
             final var response = result.getResponse();
             final var responseStatus = response.getStatus();
-            Assertions.assertEquals(statusCode, responseStatus);
+            Assertions.assertEquals(status.value(), responseStatus);
         };
     }
 

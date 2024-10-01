@@ -4,6 +4,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import ecommerce.dto.products.InProduct;
+import ecommerce.dto.products.InProductPatch;
 import ecommerce.dto.products.InProductsFilters;
 import ecommerce.dto.products.OutProduct;
 import ecommerce.dto.shared.InPagination;
@@ -76,14 +77,34 @@ public class ProductsServiceImpl implements ProductsService {
 
         final var product = productsRepository
             .findByIdAndActiveTrue(id)
-            .orElseThrow(() -> {
-                final var message = "product with id=%s does not exist".formatted(id);
-                return new NotFoundException(message);
-            });
+            .orElseThrow(() -> NotFoundException.product(id));
 
         product.setActive(false);
 
         productsRepository.save(product);
         log.info("deleted product with id={}", id);
+    }
+
+    @Override
+    public void patchProduct(long id, InProductPatch productPatch) {
+        log.trace("id={}", id);
+        log.trace("{}", productPatch);
+
+        final var product = productsRepository
+            .findByIdAndActiveTrue(id)
+            .orElseThrow(() -> NotFoundException.product(id));
+
+        if (productPatch.name() != null) {
+            product.setName(productPatch.name());
+        }
+        if (productPatch.description() != null) {
+            product.setDescription(productPatch.description());
+        }
+        if (productPatch.price() != null) {
+            product.setPrice(productPatch.price());
+        }
+
+        productsRepository.save(product);
+        log.info("patched product with id={}", id);
     }
 }
