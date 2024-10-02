@@ -72,6 +72,20 @@ public class ProductsServiceImpl implements ProductsService {
     }
 
     @Override
+    public OutProduct getProduct(long id) {
+        log.trace("id={}", id);
+
+        final var entity = productsRepository
+            .findByIdAndActiveTrue(id)
+            .orElseThrow(() -> NotFoundException.product(id));
+        log.info("found product with id={}", id);
+
+        final var product = OutProduct.from(entity);
+
+        return product;
+    }
+
+    @Override
     public void deleteProduct(long id) {
         log.trace("id={}", id);
 

@@ -21,6 +21,7 @@ import ecommerce.configuration.auth.JwtAuthConfiguration;
 import ecommerce.controller.utils.ControllerTestUtils;
 import ecommerce.dto.products.InProduct;
 import ecommerce.dto.products.InProductPatch;
+import ecommerce.dto.products.OutProduct;
 import ecommerce.exception.NotFoundException;
 import ecommerce.service.products.ProductsService;
 
@@ -265,6 +266,41 @@ public class ProductsControllerTests {
         );
 
         test_postProduct_validationException(product);
+    }
+
+    //#endregion
+
+    //#region getProduct
+
+    @Test
+    public void getProduct_statusCode200() throws Exception {
+        final var product = new OutProduct(
+            1L,
+            "name",
+            "description",
+            new BigDecimal(24.99)
+        );
+
+        Mockito
+            .doReturn(product)
+            .when(productsService)
+            .getProduct(Mockito.anyLong());
+
+        mvc
+            .perform(MockMvcRequestBuilders.get("/api/v1/products/1"))
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.OK));
+    }
+
+    @Test
+    public void getProduct_notFound() throws Exception {
+        Mockito
+            .doThrow(NotFoundException.class)
+            .when(productsService)
+            .getProduct(Mockito.anyLong());
+
+        mvc
+            .perform(MockMvcRequestBuilders.get("/api/v1/products/1"))
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));
     }
 
     //#endregion

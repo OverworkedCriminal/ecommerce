@@ -74,6 +74,20 @@ public class ProductsController {
         return productsService.postProduct(product);
     }
 
+    @GetMapping("/{id}")
+    @Operation(
+        summary = "fetch single active product",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "success"),
+            @ApiResponse(responseCode = "404", description = "product does not exist")
+        }
+    )
+    public OutProduct getProduct(
+        @PathVariable long id
+    ) {
+        return productsService.getProduct(id);
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Secured({ AuthRoles.DELETE_PRODUCT })

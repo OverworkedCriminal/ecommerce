@@ -12,6 +12,8 @@ public interface ProductsService {
 
     OutProduct postProduct(InProduct product);
 
+    OutProduct getProduct(long id);
+
     void deleteProduct(long id);
 
     void patchProduct(long id, InProductPatch productPatch);
