@@ -2,6 +2,8 @@ package ecommerce.configuration.exceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -16,6 +18,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Void> handleNotFoundException(NotFoundException e) {
         log.warn("{}", e.getMessage());
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Void> handleUnauthorizedException(AuthenticationException e) {
+        log.warn("{}", e.getMessage());
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Void> handleForbiddenException(AccessDeniedException e) {
+        log.warn("{}", e.getMessage());
+        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 
 }

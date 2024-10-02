@@ -8,8 +8,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(
@@ -31,15 +29,6 @@ public class JwtAuthConfiguration {
             )
             .sessionManagement(session -> 
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .exceptionHandling(exceptionHandling -> 
-                exceptionHandling
-                    .accessDeniedHandler((request, response, exception) ->
-                        response.setStatus(HttpServletResponse.SC_FORBIDDEN)
-                    )
-                    .authenticationEntryPoint((request, response, exception) ->
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED)
-                    )
             )
             .build();
     }
