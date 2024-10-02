@@ -5,12 +5,15 @@ import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.lang.Nullable;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -25,11 +28,8 @@ import ecommerce.dto.products.OutProduct;
 import ecommerce.exception.NotFoundException;
 import ecommerce.service.products.ProductsService;
 
+@WebMvcTest(ProductsController.class)
 @Import(JwtAuthConfiguration.class)
-@WebMvcTest(
-    controllers = ProductsController.class,
-    excludeAutoConfiguration = SecurityAutoConfiguration.class    
-)
 public class ProductsControllerTests {
 
     @Autowired
@@ -143,14 +143,12 @@ public class ProductsControllerTests {
             .perform(
                 MockMvcRequestBuilders
                     .post("/api/v1/products")
-                    .header(
-                        "Authorization",
-                        ControllerTestUtils.createAuthorizationBearer(
-                            AuthRoles.CREATE_PRODUCT
-                        )
-                    )
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsBytes(product))
+                    .with(
+                        SecurityMockMvcRequestPostProcessors.jwt()
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.CREATE_PRODUCT))
+                    )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.BAD_REQUEST));
 
@@ -171,14 +169,12 @@ public class ProductsControllerTests {
             .perform(
                 MockMvcRequestBuilders
                     .post("/api/v1/products")
-                    .header(
-                        "Authorization",
-                        ControllerTestUtils.createAuthorizationBearer(
-                            AuthRoles.CREATE_PRODUCT
-                        )
-                    )
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsBytes(product))
+                    .with(
+                        SecurityMockMvcRequestPostProcessors.jwt()
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.CREATE_PRODUCT))
+                    )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.OK));
 
@@ -221,12 +217,9 @@ public class ProductsControllerTests {
             .perform(
                 MockMvcRequestBuilders
                     .post("/api/v1/products")
-                    .header(
-                        "Authorization",
-                        ControllerTestUtils.createAuthorizationBearer()
-                    )
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsBytes(product))
+                    .with(SecurityMockMvcRequestPostProcessors.jwt())
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.FORBIDDEN));
 
@@ -318,9 +311,10 @@ public class ProductsControllerTests {
             .perform(
                 MockMvcRequestBuilders
                     .delete("/api/v1/products/1")
-                    .header(
-                        "Authorization",
-                        ControllerTestUtils.createAuthorizationBearer(AuthRoles.DELETE_PRODUCT)
+                    .with(
+                        SecurityMockMvcRequestPostProcessors
+                            .jwt()
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.DELETE_PRODUCT))
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NO_CONTENT));
@@ -345,10 +339,7 @@ public class ProductsControllerTests {
             .perform(
                 MockMvcRequestBuilders
                     .delete("/api/v1/products/1")
-                    .header(
-                        "Authorization",
-                        ControllerTestUtils.createAuthorizationBearer()
-                    )
+                    .with(SecurityMockMvcRequestPostProcessors.jwt())
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.FORBIDDEN));
 
@@ -368,9 +359,10 @@ public class ProductsControllerTests {
             .perform(
                 MockMvcRequestBuilders
                     .delete("/api/v1/products/1")
-                    .header(
-                        "Authorization",
-                        ControllerTestUtils.createAuthorizationBearer(AuthRoles.DELETE_PRODUCT)
+                    .with(
+                        SecurityMockMvcRequestPostProcessors
+                            .jwt()
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.DELETE_PRODUCT))
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));
@@ -390,7 +382,7 @@ public class ProductsControllerTests {
      */
     private void test_patchProduct_authorization(
         HttpStatus expectedStatus,
-        String authorizationHeaderValue
+        @Nullable JwtRequestPostProcessor postProcessor
     ) throws Exception {
         Mockito
             .doNothing()
@@ -407,8 +399,8 @@ public class ProductsControllerTests {
             .patch("/api/v1/products/1")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsBytes(patch));
-        if (authorizationHeaderValue != null) {
-            requestBuilder = requestBuilder.header("Authorization", authorizationHeaderValue);
+        if (postProcessor != null) {
+            requestBuilder = requestBuilder.with(postProcessor);
         }
 
         mvc
@@ -427,9 +419,13 @@ public class ProductsControllerTests {
             .perform(
                 MockMvcRequestBuilders
                     .patch("/api/v1/products/1")
-                    .header("Authorization", ControllerTestUtils.createAuthorizationBearer(AuthRoles.UPDATE_PRODUCT))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsBytes(patch))
+                    .with(
+                        SecurityMockMvcRequestPostProcessors
+                            .jwt()
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.UPDATE_PRODUCT))
+                    )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.BAD_REQUEST));
 
@@ -442,7 +438,9 @@ public class ProductsControllerTests {
     public void patchProduct_statusCode204_roleCreateProduct() throws Exception {
         test_patchProduct_authorization(
             HttpStatus.NO_CONTENT,
-            ControllerTestUtils.createAuthorizationBearer(AuthRoles.CREATE_PRODUCT)
+            SecurityMockMvcRequestPostProcessors
+                .jwt()
+                .authorities(new SimpleGrantedAuthority(AuthRoles.CREATE_PRODUCT))
         );
     }
 
@@ -450,7 +448,9 @@ public class ProductsControllerTests {
     public void patchProduct_statusCode204_roleUpdateProduct() throws Exception {
         test_patchProduct_authorization(
             HttpStatus.NO_CONTENT,
-            ControllerTestUtils.createAuthorizationBearer(AuthRoles.UPDATE_PRODUCT)
+            SecurityMockMvcRequestPostProcessors
+                .jwt()
+                .authorities(new SimpleGrantedAuthority(AuthRoles.UPDATE_PRODUCT))
         );
     }
 
@@ -466,7 +466,7 @@ public class ProductsControllerTests {
     public void patchProduct_forbidden() throws Exception {
         test_patchProduct_authorization(
             HttpStatus.FORBIDDEN,
-            ControllerTestUtils.createAuthorizationBearer()
+            SecurityMockMvcRequestPostProcessors.jwt()
         );
     }
 
@@ -504,9 +504,13 @@ public class ProductsControllerTests {
             .perform(
                 MockMvcRequestBuilders
                     .patch("/api/v1/products/1")
-                    .header("Authorization", ControllerTestUtils.createAuthorizationBearer(AuthRoles.UPDATE_PRODUCT))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsBytes(patch))
+                    .with(
+                        SecurityMockMvcRequestPostProcessors
+                            .jwt()
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.UPDATE_PRODUCT))
+                    )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));
     }
