@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import ecommerce.dto.products.InProduct;
 import ecommerce.dto.products.InProductPatch;
 import ecommerce.dto.products.InProductsFilters;
-import ecommerce.dto.products.OutProduct;
+import ecommerce.dto.products.OutProductDetails;
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
 import ecommerce.exception.NotFoundException;
@@ -24,7 +24,7 @@ public class ProductsServiceImpl implements ProductsService {
     private final ProductsRepository productsRepository;
 
     @Override
-    public OutPage<OutProduct> getProducts(
+    public OutPage<OutProductDetails> getProducts(
         InProductsFilters filters,
         InPagination pagination
     ) {
@@ -44,7 +44,7 @@ public class ProductsServiceImpl implements ProductsService {
 
         final var products = productsRepository
             .findAll(specification, pageRequest)
-            .map(OutProduct::from);
+            .map(OutProductDetails::from);
         log.info("found products count={}", products.getNumberOfElements());
 
         final var productsPage = OutPage.from(products);
@@ -53,7 +53,7 @@ public class ProductsServiceImpl implements ProductsService {
     }
 
     @Override
-    public OutProduct postProduct(InProduct product) {
+    public OutProductDetails postProduct(InProduct product) {
         log.trace("{}", product);
 
         final var entity = Product.builder()
@@ -66,13 +66,13 @@ public class ProductsServiceImpl implements ProductsService {
         final var savedEntity = productsRepository.save(entity);
         log.info("created product with id={}", savedEntity.getId());
 
-        final var savedProduct = OutProduct.from(savedEntity);
+        final var savedProduct = OutProductDetails.from(savedEntity);
 
         return savedProduct;
     }
 
     @Override
-    public OutProduct getProduct(long id) {
+    public OutProductDetails getProduct(long id) {
         log.trace("id={}", id);
 
         final var entity = productsRepository
@@ -80,7 +80,7 @@ public class ProductsServiceImpl implements ProductsService {
             .orElseThrow(() -> NotFoundException.product(id));
         log.info("found product with id={}", id);
 
-        final var product = OutProduct.from(entity);
+        final var product = OutProductDetails.from(entity);
 
         return product;
     }

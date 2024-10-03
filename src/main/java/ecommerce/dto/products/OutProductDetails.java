@@ -6,14 +6,14 @@ import ecommerce.repository.products.entity.Product;
 import lombok.Builder;
 
 @Builder
-public record OutProduct(
+public record OutProductDetails(
     Long id,
     String name,
     String description,
     BigDecimal price
 ) {
-    public static OutProduct from(Product product) {
-        return OutProduct.builder()
+    public static OutProductDetails from(Product product) {
+        return OutProductDetails.builder()
             .id(product.getId())
             .name(product.getName())
             .description(product.getDescription())

@@ -24,7 +24,7 @@ import ecommerce.configuration.auth.JwtAuthConfiguration;
 import ecommerce.controller.utils.ControllerTestUtils;
 import ecommerce.dto.products.InProduct;
 import ecommerce.dto.products.InProductPatch;
-import ecommerce.dto.products.OutProduct;
+import ecommerce.dto.products.OutProductDetails;
 import ecommerce.exception.NotFoundException;
 import ecommerce.service.products.ProductsService;
 
@@ -267,7 +267,7 @@ public class ProductsControllerTests {
 
     @Test
     public void getProduct_statusCode200() throws Exception {
-        final var product = new OutProduct(
+        final var product = new OutProductDetails(
             1L,
             "name",
             "description",
