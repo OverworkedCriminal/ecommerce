@@ -19,6 +19,7 @@ import ecommerce.dto.products.InProduct;
 import ecommerce.dto.products.InProductPatch;
 import ecommerce.dto.products.InProductsFilters;
 import ecommerce.dto.products.OutProduct;
+import ecommerce.dto.products.OutProductDetails;
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
 import ecommerce.service.products.ProductsService;
@@ -68,7 +69,7 @@ public class ProductsController {
             @ApiResponse(responseCode = "403", description = "user lacks role " + AuthRoles.CREATE_PRODUCT)
         }
     )
-    public OutProduct postProduct(
+    public OutProductDetails postProduct(
         @Validated @RequestBody InProduct product
     ) {
         return productsService.postProduct(product);
@@ -82,7 +83,7 @@ public class ProductsController {
             @ApiResponse(responseCode = "404", description = "product does not exist")
         }
     )
-    public OutProduct getProduct(
+    public OutProductDetails getProduct(
         @PathVariable long id
     ) {
         return productsService.getProduct(id);
