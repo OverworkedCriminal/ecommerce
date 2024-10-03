@@ -18,6 +18,7 @@ import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.dto.products.InProduct;
 import ecommerce.dto.products.InProductPatch;
 import ecommerce.dto.products.InProductsFilters;
+import ecommerce.dto.products.OutProduct;
 import ecommerce.dto.products.OutProductDetails;
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
@@ -49,7 +50,7 @@ public class ProductsController {
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid")
         }
     )
-    public OutPage<OutProductDetails> getProducts(
+    public OutPage<OutProduct> getProducts(
         @Validated @ModelAttribute InPagination pagination,
         @Validated @ModelAttribute InProductsFilters filters
     ) {

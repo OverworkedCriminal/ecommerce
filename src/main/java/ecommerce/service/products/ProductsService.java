@@ -3,12 +3,13 @@ package ecommerce.service.products;
 import ecommerce.dto.products.InProduct;
 import ecommerce.dto.products.InProductPatch;
 import ecommerce.dto.products.InProductsFilters;
+import ecommerce.dto.products.OutProduct;
 import ecommerce.dto.products.OutProductDetails;
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
 
 public interface ProductsService {
-    OutPage<OutProductDetails> getProducts(InProductsFilters filters, InPagination pagination);
+    OutPage<OutProduct> getProducts(InProductsFilters filters, InPagination pagination);
 
     OutProductDetails postProduct(InProduct product);
 

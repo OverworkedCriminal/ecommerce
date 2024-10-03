@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ecommerce.dto.products.InProduct;
 import ecommerce.dto.products.InProductPatch;
 import ecommerce.dto.products.InProductsFilters;
+import ecommerce.dto.products.OutProduct;
 import ecommerce.dto.products.OutProductDetails;
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
@@ -24,7 +25,7 @@ public class ProductsServiceImpl implements ProductsService {
     private final ProductsRepository productsRepository;
 
     @Override
-    public OutPage<OutProductDetails> getProducts(
+    public OutPage<OutProduct> getProducts(
         InProductsFilters filters,
         InPagination pagination
     ) {
@@ -44,7 +45,7 @@ public class ProductsServiceImpl implements ProductsService {
 
         final var products = productsRepository
             .findAll(specification, pageRequest)
-            .map(OutProductDetails::from);
+            .map(OutProduct::from);
         log.info("found products count={}", products.getNumberOfElements());
 
         final var productsPage = OutPage.from(products);
