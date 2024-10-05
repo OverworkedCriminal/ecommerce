@@ -1,5 +1,6 @@
 package ecommerce.dto.orders;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,6 +14,7 @@ public record OutOrder(
     String username,
     LocalDateTime orderedAt,
     LocalDateTime completedAt,
+    BigDecimal price,
     List<OutOrderProduct> orderProducts
 ) {
 
@@ -22,6 +24,7 @@ public record OutOrder(
             .username(order.getUsername())
             .orderedAt(order.getOrderedAt())
             .completedAt(order.getCompletedAt())
+            .price(order.getPrice())
             .orderProducts(
                 order.getOrderProducts()
                     .stream()
