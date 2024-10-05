@@ -11,4 +11,9 @@ public class NotFoundException extends RuntimeException {
         return new NotFoundException(message);
     }
 
+    public static NotFoundException order(long id) {
+        final var message = "order with id=%d not found".formatted(id);
+        return new NotFoundException(message);
+    }
+
 }

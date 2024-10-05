@@ -1,10 +1,10 @@
 package ecommerce.dto.orders;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import ecommerce.dto.products.OutProduct;
 import ecommerce.repository.orders.entity.Order;
 import lombok.Builder;
 
@@ -14,7 +14,8 @@ public record OutOrder(
     String username,
     LocalDateTime orderedAt,
     LocalDateTime completedAt,
-    List<OutProduct> orderProducts
+    BigDecimal price,
+    List<OutOrderProduct> orderProducts
 ) {
 
     public static OutOrder from(Order order) {
@@ -23,10 +24,11 @@ public record OutOrder(
             .username(order.getUsername())
             .orderedAt(order.getOrderedAt())
             .completedAt(order.getCompletedAt())
+            .price(order.getPrice())
             .orderProducts(
                 order.getOrderProducts()
                     .stream()
-                    .map(OutProduct::from)
+                    .map(OutOrderProduct::from)
                     .collect(Collectors.toList())
             )
             .build();
