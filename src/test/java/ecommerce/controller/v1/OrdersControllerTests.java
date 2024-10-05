@@ -22,7 +22,7 @@ import ecommerce.configuration.auth.JwtAuthConfiguration;
 import ecommerce.controller.utils.ControllerTestUtils;
 import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.InOrderProduct;
-import ecommerce.service.orders.OrdersService;
+import ecommerce.service.orders.IOrdersService;
 
 @WebMvcTest(OrdersController.class)
 @Import(JwtAuthConfiguration.class)
@@ -34,7 +34,7 @@ public class OrdersControllerTests {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private OrdersService ordersService;
+    private IOrdersService ordersService;
 
     //#region postOrder
 

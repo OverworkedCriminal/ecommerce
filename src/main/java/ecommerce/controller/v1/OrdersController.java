@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.OutOrder;
-import ecommerce.service.orders.OrdersService;
+import ecommerce.service.orders.IOrdersService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OrdersController {
 
-    private final OrdersService ordersService;
+    private final IOrdersService ordersService;
 
     @PostMapping("")
     @Operation(
