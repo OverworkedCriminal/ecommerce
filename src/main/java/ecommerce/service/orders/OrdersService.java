@@ -9,7 +9,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import ecommerce.dto.orders.InOrder;
+import ecommerce.dto.orders.InOrderCompletedAtUpdate;
 import ecommerce.dto.orders.OutOrder;
+import ecommerce.exception.ConflictException;
 import ecommerce.exception.NotFoundException;
 import ecommerce.exception.ValidationException;
 import ecommerce.repository.orders.OrdersRepository;
@@ -81,11 +83,32 @@ public class OrdersService implements IOrdersService {
             .forEach(orderProductEntity -> orderProductEntity.setOrder(orderEntity));
 
         final var savedOrderEntity = ordersRepository.save(orderEntity);
-        log.info("saved order with id={}", savedOrderEntity.getId());
+        log.info("created order with id={}", savedOrderEntity.getId());
 
         final var orderOut = OutOrder.from(savedOrderEntity);
 
         return orderOut;
+    }
+
+    public void putOrderCompletedAt(long id, InOrderCompletedAtUpdate update) {
+        log.trace("id={}", id);
+        log.trace("{}", update);
+
+        final var orderEntity = ordersRepository
+            .findById(id)
+            .orElseThrow(() -> NotFoundException.order(id));
+
+        final var completedAt = orderEntity.getCompletedAt();
+        if (completedAt != null) {
+            throw ConflictException.orderAlreadyCompleted(id);
+        } else if (!update.completedAt().isAfter(orderEntity.getOrderedAt())) {
+            throw new ValidationException("completedAt must be after orderedAt");
+        }
+
+        orderEntity.setCompletedAt(update.completedAt());
+        ordersRepository.save(orderEntity);
+
+        log.info("patched order with id={}", id);
     }
 
     private void validatePostOrderNoDuplicatedProducts(InOrder order) {
