@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import ecommerce.dto.products.OutProduct;
 import ecommerce.repository.orders.entity.Order;
 import lombok.Builder;
 
@@ -14,7 +13,7 @@ public record OutOrder(
     String username,
     LocalDateTime orderedAt,
     LocalDateTime completedAt,
-    List<OutProduct> orderProducts
+    List<OutOrderProduct> orderProducts
 ) {
 
     public static OutOrder from(Order order) {
@@ -26,7 +25,7 @@ public record OutOrder(
             .orderProducts(
                 order.getOrderProducts()
                     .stream()
-                    .map(OutProduct::from)
+                    .map(OutOrderProduct::from)
                     .collect(Collectors.toList())
             )
             .build();
