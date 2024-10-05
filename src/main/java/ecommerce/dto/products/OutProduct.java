@@ -2,6 +2,7 @@ package ecommerce.dto.products;
 
 import java.math.BigDecimal;
 
+import ecommerce.repository.orders.entity.OrderProduct;
 import ecommerce.repository.products.entity.Product;
 import lombok.Builder;
 
@@ -16,6 +17,16 @@ public record OutProduct(
             .id(product.getId())
             .name(product.getName())
             .price(product.getPrice())
+            .build();
+    }
+
+    public static OutProduct from(OrderProduct orderProduct) {
+        final var product = orderProduct.getProduct();
+
+        return OutProduct.builder()
+            .id(product.getId())
+            .name(product.getName())
+            .price(orderProduct.getPrice())
             .build();
     }
 }
