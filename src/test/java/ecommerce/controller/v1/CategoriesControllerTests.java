@@ -266,4 +266,68 @@ public class CategoriesControllerTests {
     }
 
     //#endregion
+
+    //#region deleteCategory
+
+    private void test_deleteCategory_authorization(
+        HttpStatus expectedStatus,
+        @Nullable RequestPostProcessor postProcessor
+    ) throws Exception {
+        var requestBuilder = MockMvcRequestBuilders.delete("/api/v1/categories/1");
+        if (postProcessor != null) {
+            requestBuilder = requestBuilder.with(postProcessor);
+        }
+
+        mvc
+            .perform(requestBuilder)
+            .andExpect(ControllerTestUtils.expectStatus(expectedStatus));
+    }
+
+    @Test
+    public void deleteCategory_statusCode204() throws Exception {
+        test_deleteCategory_authorization(
+            HttpStatus.NO_CONTENT,
+            SecurityMockMvcRequestPostProcessors
+                .jwt()
+                .authorities(new SimpleGrantedAuthority(AuthRoles.MANAGE_CATEGORY))
+        );
+    }
+
+    @Test
+    public void deleteCategory_unauthorized() throws Exception {
+        test_deleteCategory_authorization(
+            HttpStatus.UNAUTHORIZED, 
+            null
+        );
+    }
+
+    @Test
+    public void deleteCategory_forbidden() throws Exception {
+        test_deleteCategory_authorization(
+            HttpStatus.FORBIDDEN, 
+            SecurityMockMvcRequestPostProcessors.jwt()
+        );
+    }
+
+    @Test
+    public void deleteCategory_notFoundException() throws Exception {
+        Mockito
+            .doThrow(NotFoundException.class)
+            .when(categoriesService)
+            .deleteCategory(Mockito.anyLong());
+
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .delete("/api/v1/categories/1")
+                    .with(
+                        SecurityMockMvcRequestPostProcessors
+                            .jwt()
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.MANAGE_CATEGORY))
+                    )
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));
+    }
+    
+    //#endregion
 }

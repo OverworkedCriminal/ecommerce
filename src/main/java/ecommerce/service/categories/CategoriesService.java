@@ -59,4 +59,16 @@ public class CategoriesService implements ICategoriesService {
         log.info("updated category with id={}", id);
     }
 
+    @Override
+    public void deleteCategory(long id) {
+        log.trace("id={}", id);
+
+        final var categoryEntity = categoriesRepository
+            .findById(id)
+            .orElseThrow(() -> NotFoundException.category(id));
+
+        categoriesRepository.delete(categoryEntity);
+        log.info("deleted category with id={}", id);
+    }
+
 }

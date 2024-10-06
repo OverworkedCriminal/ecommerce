@@ -5,6 +5,7 @@ import static ecommerce.configuration.docs.OpenApiConfiguration.BEARER;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -73,5 +74,24 @@ public class CategoriesController {
         @Validated @RequestBody InCategory category
     ) {
         categoriesService.putCategory(id, category);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Secured({ AuthRoles.MANAGE_CATEGORY })
+    @Operation(
+        summary = "removes category",
+        security = @SecurityRequirement(name = BEARER),
+        responses = {
+            @ApiResponse(responseCode = "204", description = "success"),
+            @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
+            @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.MANAGE_CATEGORY + "]"),
+            @ApiResponse(responseCode = "404", description = "category does not exist"),
+        }
+    )
+    public void deleteCategory(
+        @PathVariable long id
+    ) {
+        categoriesService.deleteCategory(id);
     }
 }

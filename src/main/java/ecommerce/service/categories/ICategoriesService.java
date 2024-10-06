@@ -9,4 +9,6 @@ public interface ICategoriesService {
 
     void putCategory(long id, InCategory category);
 
+    void deleteCategory(long id);
+
 }
