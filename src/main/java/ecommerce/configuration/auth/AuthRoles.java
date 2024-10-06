@@ -10,4 +10,6 @@ public class AuthRoles {
     public static final String DELETE_PRODUCT = "ecommerce_delete_product";
 
     public static final String UPDATE_ORDER_COMPLETED_AT = "ecommerce_update_order_completed_at";
+
+    public static final String MANAGE_CATEGORY = "ecommerce_manage_category";
 }
