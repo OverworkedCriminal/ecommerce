@@ -1,6 +1,7 @@
 package ecommerce.dto.products;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.springframework.lang.Nullable;
 
@@ -10,5 +11,6 @@ import jakarta.validation.constraints.DecimalMin;
 public record InProductPatch(
     @Nullable @NullableNotBlank String name,
     @Nullable @NullableNotBlank String description,
-    @Nullable @DecimalMin(value = "0.00", inclusive = false) BigDecimal price
+    @Nullable @DecimalMin(value = "0.00", inclusive = false) BigDecimal price,
+    @Nullable List<Long> categories
 ) {}

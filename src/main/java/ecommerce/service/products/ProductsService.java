@@ -1,5 +1,9 @@
 package ecommerce.service.products;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -11,9 +15,13 @@ import ecommerce.dto.products.OutProductDetails;
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
 import ecommerce.exception.NotFoundException;
+import ecommerce.repository.categories.CategoriesRepository;
+import ecommerce.repository.categories.entity.Category;
 import ecommerce.repository.products.ProductsRepository;
 import ecommerce.repository.products.entity.Product;
+import ecommerce.service.utils.CollectionUtils;
 import jakarta.persistence.criteria.Path;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ProductsService implements IProductsService {
 
     private final ProductsRepository productsRepository;
+    private final CategoriesRepository categoriesRepository;
 
     @Override
     public OutPage<OutProduct> getProducts(
@@ -57,11 +66,18 @@ public class ProductsService implements IProductsService {
     public OutProductDetails postProduct(InProduct product) {
         log.trace("{}", product);
 
+        final var categories = product.categories();
+        if (CollectionUtils.containsDuplicates(categories)) {
+            throw new ValidationException("product categories contain duplicates");
+        }
+        final var categoryEntities = findCategoriesByIds(categories);
+
         final var entity = Product.builder()
             .active(true)
             .name(product.name())
             .description(product.description())
             .price(product.price())
+            .categories(categoryEntities)
             .build();
 
         final var savedEntity = productsRepository.save(entity);
@@ -118,8 +134,37 @@ public class ProductsService implements IProductsService {
         if (productPatch.price() != null) {
             product.setPrice(productPatch.price());
         }
+        final List<Long> categories = productPatch.categories();
+        if (categories != null) {
+            if (CollectionUtils.containsDuplicates(categories)) {
+                throw new ValidationException("product categories contain duplicates");
+            }
+            final var categoryEntities = findCategoriesByIds(categories);
+            product.setCategories(categoryEntities);
+        }
 
         productsRepository.save(product);
         log.info("patched product with id={}", id);
+    }
+
+    /**
+     * Finds categories by ids.
+     * 
+     * Throws NotFoundException when any of ids is not found.
+     * 
+     * @param ids
+     * @return categories
+     */
+    private List<Category> findCategoriesByIds(Collection<Long> ids) {
+        if (ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final var categories = categoriesRepository.findAllById(ids);
+        if (categories.size() != ids.size()) {
+            throw new NotFoundException("category not found");
+        }
+
+        return categories;
     }
 }

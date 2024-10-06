@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.InOrderCompletedAtUpdate;
@@ -19,7 +20,6 @@ import ecommerce.repository.orders.entity.Order;
 import ecommerce.repository.orders.entity.OrderProduct;
 import ecommerce.repository.products.ProductsRepository;
 import ecommerce.service.utils.CollectionUtils;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
