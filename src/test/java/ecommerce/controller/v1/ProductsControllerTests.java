@@ -1,6 +1,7 @@
 package ecommerce.controller.v1;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -127,6 +128,16 @@ public class ProductsControllerTests {
         test_getProducts_validationException(url);
     }
 
+    @Test
+    public void getProducts_categoriesListEmpty() throws Exception {
+        final int pageSize = 10;
+        final int pageIdx = 1;
+        final String url = "/api/v1/products?pageSize=%d&pageIdx=%d&categories="
+            .formatted(pageSize, pageIdx);
+
+        test_getProducts_validationException(url);
+    }
+
     //#endregion
 
     //#region postProduct
@@ -162,7 +173,8 @@ public class ProductsControllerTests {
         final var product = new InProduct(
             "name",
             "description",
-            new BigDecimal(10.00)
+            new BigDecimal(10.00),
+            Collections.emptyList()
         );
 
         mvc
@@ -188,7 +200,8 @@ public class ProductsControllerTests {
         final var product = new InProduct(
             "name",
             "description",
-            new BigDecimal(10.00)
+            new BigDecimal(10.00),
+            Collections.emptyList()
         );
 
         mvc
@@ -210,7 +223,8 @@ public class ProductsControllerTests {
         final var product = new InProduct(
             "name",
             "description",
-            new BigDecimal(10.00)
+            new BigDecimal(10.00),
+            Collections.emptyList()
         );
 
         mvc
@@ -233,7 +247,8 @@ public class ProductsControllerTests {
         final var product = new InProduct(
             "",
             "description",
-            new BigDecimal(10.00)
+            new BigDecimal(10.00),
+            Collections.emptyList()
         );
 
         test_postProduct_validationException(product);
@@ -244,7 +259,8 @@ public class ProductsControllerTests {
         final var product = new InProduct(
             "name",
             "",
-            new BigDecimal(10.00)
+            new BigDecimal(10.00),
+            Collections.emptyList()
         );
 
         test_postProduct_validationException(product);
@@ -255,7 +271,8 @@ public class ProductsControllerTests {
         final var product = new InProduct(
             "name",
             "description",
-            BigDecimal.ZERO
+            BigDecimal.ZERO,
+            Collections.emptyList()
         );
 
         test_postProduct_validationException(product);
@@ -271,7 +288,8 @@ public class ProductsControllerTests {
             1L,
             "name",
             "description",
-            new BigDecimal(24.99)
+            new BigDecimal(24.99),
+            Collections.emptyList()
         );
 
         Mockito
@@ -392,7 +410,8 @@ public class ProductsControllerTests {
         final var patch = new InProductPatch(
             "name",
             "description",
-            new BigDecimal(14.99)
+            new BigDecimal(14.99),
+            Collections.emptyList()
         );
 
         var requestBuilder = MockMvcRequestBuilders
@@ -472,28 +491,28 @@ public class ProductsControllerTests {
 
     @Test
     public void patchProduct_nameBlank() throws Exception {
-        final var patch = new InProductPatch("", null, null);
+        final var patch = new InProductPatch("", null, null, null);
 
         test_patchProduct_validation(patch);
     }
 
     @Test
     public void patchProduct_descriptionBlank() throws Exception {
-        final var patch = new InProductPatch(null, "", null);
+        final var patch = new InProductPatch(null, "", null, null);
 
         test_patchProduct_validation(patch);
     }
 
     @Test
     public void patchProduct_priceZero() throws Exception {
-        final var patch = new InProductPatch(null, null, BigDecimal.ZERO);
+        final var patch = new InProductPatch(null, null, BigDecimal.ZERO, null);
 
         test_patchProduct_validation(patch);
     }
 
     @Test
     public void patchProduct_notFound() throws Exception {
-        final var patch = new InProductPatch("name", "description", new BigDecimal(24.99));
+        final var patch = new InProductPatch("name", "description", new BigDecimal(24.99), Collections.emptyList());
         
         Mockito
             .doThrow(NotFoundException.class)

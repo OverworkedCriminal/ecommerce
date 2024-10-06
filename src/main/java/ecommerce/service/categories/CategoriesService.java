@@ -2,6 +2,7 @@ package ecommerce.service.categories;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ecommerce.dto.categories.InCategory;
 import ecommerce.dto.categories.OutCategory;
@@ -60,12 +61,17 @@ public class CategoriesService implements ICategoriesService {
     }
 
     @Override
+    @Transactional
     public void deleteCategory(long id) {
         log.trace("id={}", id);
 
         final var categoryEntity = categoriesRepository
             .findById(id)
             .orElseThrow(() -> NotFoundException.category(id));
+
+        categoryEntity.getProducts()
+            .stream()
+            .forEach(product -> product.getCategories().remove(categoryEntity));
 
         categoriesRepository.delete(categoryEntity);
         log.info("deleted category with id={}", id);

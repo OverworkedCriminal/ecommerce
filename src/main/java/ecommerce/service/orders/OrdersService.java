@@ -2,14 +2,15 @@ package ecommerce.service.orders;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.InOrderCompletedAtUpdate;
+import ecommerce.dto.orders.InOrderProduct;
 import ecommerce.dto.orders.OutOrder;
 import ecommerce.exception.ConflictException;
 import ecommerce.exception.NotFoundException;
@@ -18,7 +19,7 @@ import ecommerce.repository.orders.OrdersRepository;
 import ecommerce.repository.orders.entity.Order;
 import ecommerce.repository.orders.entity.OrderProduct;
 import ecommerce.repository.products.ProductsRepository;
-import jakarta.transaction.Transactional;
+import ecommerce.service.utils.CollectionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -113,14 +114,8 @@ public class OrdersService implements IOrdersService {
 
     private void validatePostOrderNoDuplicatedProducts(InOrder order) {
         final var products = order.products();
-        
-        final var productIds = new HashSet<Long>();
-        final var allProductsUnique = products
-            .stream()
-            .map(product -> product.productId())
-            .allMatch(productId -> productIds.add(productId));
 
-        if (!allProductsUnique) {
+        if (CollectionUtils.containsDuplicates(products, InOrderProduct::productId)) {
             throw new ValidationException("order products contain duplicates");
         }
     }
