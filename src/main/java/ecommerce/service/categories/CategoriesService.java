@@ -1,0 +1,42 @@
+package ecommerce.service.categories;
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+
+import ecommerce.dto.categories.InCategory;
+import ecommerce.dto.categories.OutCategory;
+import ecommerce.exception.ConflictException;
+import ecommerce.repository.categories.CategoriesRepository;
+import ecommerce.repository.categories.entity.Category;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class CategoriesService implements ICategoriesService {
+
+    private final CategoriesRepository categoriesRepository;
+
+    @Override
+    public OutCategory postCategory(InCategory categoryIn) {
+        log.trace("{}", categoryIn);
+
+        var categoryEntity = Category.builder()
+            .name(categoryIn.name())
+            .build();
+
+        try {
+            categoryEntity = categoriesRepository.save(categoryEntity);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("category with such name already exist");
+        }
+
+        log.info("created category with id={}", categoryEntity.getId());
+
+        final var categoryOut = OutCategory.from(categoryEntity);
+
+        return categoryOut;
+    }
+
+}
