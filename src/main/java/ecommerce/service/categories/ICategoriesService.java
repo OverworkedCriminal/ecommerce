@@ -7,4 +7,6 @@ public interface ICategoriesService {
 
     OutCategory postCategory(InCategory category);
 
+    void putCategory(long id, InCategory category);
+
 }

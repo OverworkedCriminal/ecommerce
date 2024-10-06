@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ecommerce.dto.categories.InCategory;
 import ecommerce.dto.categories.OutCategory;
 import ecommerce.exception.ConflictException;
+import ecommerce.exception.NotFoundException;
 import ecommerce.repository.categories.CategoriesRepository;
 import ecommerce.repository.categories.entity.Category;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,25 @@ public class CategoriesService implements ICategoriesService {
         final var categoryOut = OutCategory.from(categoryEntity);
 
         return categoryOut;
+    }
+
+    @Override
+    public void putCategory(long id, InCategory categoryIn) {
+        log.trace("id={}", id);
+        log.trace("{}", categoryIn);
+
+        final var categoryEntity = categoriesRepository
+            .findById(id)
+            .orElseThrow(() -> NotFoundException.category(id));
+
+        categoryEntity.setName(categoryIn.name());
+        try {
+            categoriesRepository.save(categoryEntity);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("category with such name already exist");
+        }
+
+        log.info("updated category with id={}", id);
     }
 
 }

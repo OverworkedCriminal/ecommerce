@@ -21,6 +21,7 @@ import ecommerce.configuration.auth.JwtAuthConfiguration;
 import ecommerce.controller.utils.ControllerTestUtils;
 import ecommerce.dto.categories.InCategory;
 import ecommerce.exception.ConflictException;
+import ecommerce.exception.NotFoundException;
 import ecommerce.service.categories.ICategoriesService;
 import jakarta.annotation.Nullable;
 
@@ -135,6 +136,133 @@ public class CategoriesControllerTests {
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.CONFLICT));
+    }
+
+    //#endregion
+
+    //#region putProduct
+
+    private void test_putCategory_authorization(
+        HttpStatus expectedStatus,
+        @Nullable RequestPostProcessor postProcessor
+    ) throws Exception {
+        final var category = new InCategory("name");
+
+        var requestBuilder = MockMvcRequestBuilders
+            .put("/api/v1/categories/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsBytes(category));
+        if (postProcessor != null) {
+            requestBuilder = requestBuilder.with(postProcessor);
+        }
+
+        mvc
+            .perform(requestBuilder)
+            .andExpect(ControllerTestUtils.expectStatus(expectedStatus));
+    }
+
+    @Test
+    public void putCategory_statusCode204() throws Exception {
+        test_putCategory_authorization(
+            HttpStatus.NO_CONTENT,
+            SecurityMockMvcRequestPostProcessors
+                .jwt()
+                .authorities(new SimpleGrantedAuthority(AuthRoles.MANAGE_CATEGORY))
+        );
+    }
+
+    @Test
+    public void putCategory_unauthorized() throws Exception {
+        test_putCategory_authorization(
+            HttpStatus.UNAUTHORIZED, 
+            null
+        );
+    }
+
+    @Test
+    public void putCategory_forbidden() throws Exception {
+        test_putCategory_authorization(
+            HttpStatus.FORBIDDEN, 
+            SecurityMockMvcRequestPostProcessors.jwt()
+        );
+    }
+
+    private void test_putCategory_validation(
+        InCategory category
+    ) throws Exception {
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .put("/api/v1/categories/1")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(category))
+                    .with(
+                        SecurityMockMvcRequestPostProcessors
+                            .jwt()
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.MANAGE_CATEGORY))
+                    )
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.BAD_REQUEST));
+    }
+
+    @Test
+    public void putCategory_nullName() throws Exception {
+        final var category = new InCategory(null);
+        test_putCategory_validation(category);
+    }
+
+    @Test
+    public void putCategory_emptyName() throws Exception {
+        final var category = new InCategory("");
+        test_putCategory_validation(category);
+    }
+
+    @Test
+    public void putCategory_conflictException() throws Exception {
+        final var category = new InCategory("name");
+        
+        Mockito
+            .doThrow(ConflictException.class)
+            .when(categoriesService)
+            .putCategory(Mockito.anyLong(), Mockito.any());
+
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .put("/api/v1/categories/1")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(category))
+                    .with(
+                        SecurityMockMvcRequestPostProcessors
+                            .jwt()
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.MANAGE_CATEGORY))
+                    )
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.CONFLICT));
+    }
+
+    @Test
+    public void putCategory_notFoundException() throws Exception {
+        final var category = new InCategory("name");
+
+        Mockito
+            .doThrow(NotFoundException.class)
+            .when(categoriesService)
+            .putCategory(Mockito.anyLong(), Mockito.any());
+
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .put("/api/v1/categories/1")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(category))
+                    .with(
+                        SecurityMockMvcRequestPostProcessors
+                            .jwt()
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.MANAGE_CATEGORY))
+                    )
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));
     }
 
     //#endregion
