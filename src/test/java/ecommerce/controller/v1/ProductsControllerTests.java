@@ -1,8 +1,8 @@
 package ecommerce.controller.v1;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -281,11 +281,14 @@ public class ProductsControllerTests {
 
     @Test
     public void postProduct_categoryNull() throws Exception {
+        final var categories = new ArrayList<Long>();
+        categories.add(null);
+        
         final var product = new InProduct(
             "name",
             "description",
             new BigDecimal(14.99),
-            List.of((Long) null)
+            categories
         );
 
         test_postProduct_validationException(product);
@@ -525,7 +528,10 @@ public class ProductsControllerTests {
 
     @Test
     public void patchProduct_categoryNull() throws Exception {
-        final var patch = new InProductPatch(null, null, null, List.of((Long) null));
+        final var categories = new ArrayList<Long>();
+        categories.add(null);
+
+        final var patch = new InProductPatch(null, null, null, categories);
 
         test_patchProduct_validation(patch);
     }

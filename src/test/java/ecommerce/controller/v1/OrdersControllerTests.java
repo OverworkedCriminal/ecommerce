@@ -1,6 +1,7 @@
 package ecommerce.controller.v1;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -118,9 +119,11 @@ public class OrdersControllerTests {
 
     @Test
     public void postOrder_productsContainNullObject() throws Exception {
-        final var order = new InOrder(
-            List.of((InOrderProduct) null)
-        );
+        final var products = new ArrayList<InOrderProduct>();
+        products.add(null);
+
+        final var order = new InOrder(products);
+
         test_postOrder_validation(order);
     }
 
