@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/categories")
 @Tag(
     name = "categories",
-    description = "All endpoints related to managing orders"
+    description = "All endpoints responsible for managing orders"
 )
 @RequiredArgsConstructor
 public class CategoriesController {

@@ -35,7 +35,7 @@ import static ecommerce.configuration.docs.OpenApiConfiguration.BEARER;
 @RequestMapping("/api/v1/products")
 @Tag(
     name = "products",
-    description = "All endpoints related to managing products"
+    description = "All endpoints responsible for managing products"
 )
 @RequiredArgsConstructor
 public class ProductsController {

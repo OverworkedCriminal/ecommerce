@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/orders")
 @Tag(
     name = "orders",
-    description = "All endpoints related to managing orders"
+    description = "All endpoints responsible for managing orders"
 )
 @RequiredArgsConstructor
 public class OrdersController {
