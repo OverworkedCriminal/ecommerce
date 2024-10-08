@@ -15,13 +15,14 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record InProductsFilters(
     @Nullable @NullableNotBlank String name,
     @Nullable @DecimalMin(value = "0", inclusive = true) BigDecimal minPrice,
     @Nullable @DecimalMin(value = "0", inclusive = true) BigDecimal maxPrice,
-    @Nullable @Size(min = 1) List<Long> categories
+    @Nullable @Size(min = 1) List<@NotNull Long> categories
 ) {
 
     public Specification<Product> intoSpecification() {

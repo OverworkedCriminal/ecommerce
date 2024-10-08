@@ -11,5 +11,5 @@ public record InProduct(
     @NotBlank String name,
     @NotBlank String description,
     @NotNull @DecimalMin(value = "0.00", inclusive = false) BigDecimal price,
-    @NotNull List<Long> categories
+    @NotNull List<@NotNull Long> categories
 ) {}

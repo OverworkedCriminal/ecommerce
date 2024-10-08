@@ -2,6 +2,7 @@ package ecommerce.controller.v1;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -278,6 +279,18 @@ public class ProductsControllerTests {
         test_postProduct_validationException(product);
     }
 
+    @Test
+    public void postProduct_categoryNull() throws Exception {
+        final var product = new InProduct(
+            "name",
+            "description",
+            new BigDecimal(14.99),
+            List.of((Long) null)
+        );
+
+        test_postProduct_validationException(product);
+    }
+
     //#endregion
 
     //#region getProduct
@@ -506,6 +519,13 @@ public class ProductsControllerTests {
     @Test
     public void patchProduct_priceZero() throws Exception {
         final var patch = new InProductPatch(null, null, BigDecimal.ZERO, null);
+
+        test_patchProduct_validation(patch);
+    }
+
+    @Test
+    public void patchProduct_categoryNull() throws Exception {
+        final var patch = new InProductPatch(null, null, null, List.of((Long) null));
 
         test_patchProduct_validation(patch);
     }

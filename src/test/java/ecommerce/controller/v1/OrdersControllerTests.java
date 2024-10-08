@@ -116,6 +116,14 @@ public class OrdersControllerTests {
         test_postOrder_validation(order);
     }
 
+    @Test
+    public void postOrder_productsContainNullObject() throws Exception {
+        final var order = new InOrder(
+            List.of((InOrderProduct) null)
+        );
+        test_postOrder_validation(order);
+    }
+
     //#endregion
 
     //#region putOrderCompletedAt
