@@ -15,12 +15,16 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(
     prePostEnabled=false,
     securedEnabled=true
 )
+@Slf4j
 public class JwtAuthConfiguration {
 
     @Bean
@@ -54,6 +58,17 @@ public class JwtAuthConfiguration {
                             .jwtAuthenticationConverter(jwtAuthenticationConverter)
                     );
             })
+            .exceptionHandling(exceptionHandling -> 
+                exceptionHandling
+                    .authenticationEntryPoint((request, response, exception) -> {
+                        log.warn(exception.getMessage());
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    })
+                    .accessDeniedHandler((request, response, exception) -> {
+                        log.warn(exception.getMessage());
+                        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    })
+            )
             .build();
     }
 

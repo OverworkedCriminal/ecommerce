@@ -16,19 +16,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Void> handleNotFoundException(NotFoundException e) {
-        log.warn("{}", e.getMessage());
+        log.warn(e.getMessage());
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<Void> handleValidationException(ValidationException e) {
-        log.warn("{}", e.getMessage());
+        log.warn(e.getMessage());
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<Void> handleConflictException(ConflictException e) {
-        log.warn("{}", e.getMessage());
+        log.warn(e.getMessage());
         return new ResponseEntity<>(HttpStatus.CONFLICT);
     }
 
