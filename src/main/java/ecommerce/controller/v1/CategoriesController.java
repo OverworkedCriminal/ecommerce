@@ -36,7 +36,7 @@ public class CategoriesController {
     private final ICategoriesService categoriesService;
 
     @PostMapping("")
-    @Secured({ AuthRoles.MANAGE_CATEGORY })
+    @Secured({ AuthRoles.CATEGORY_MANAGE })
     @Operation(
         summary = "create category",
         security = @SecurityRequirement(name = BEARER),
@@ -44,7 +44,7 @@ public class CategoriesController {
             @ApiResponse(responseCode = "200", description = "success"),
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
-            @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.MANAGE_CATEGORY + "]"),
+            @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.CATEGORY_MANAGE + "]"),
             @ApiResponse(responseCode = "409", description = "category with such name already exist")
         }
     )
@@ -56,7 +56,7 @@ public class CategoriesController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Secured({ AuthRoles.MANAGE_CATEGORY })
+    @Secured({ AuthRoles.CATEGORY_MANAGE })
     @Operation(
         summary = "updates category",
         security = @SecurityRequirement(name = BEARER),
@@ -64,7 +64,7 @@ public class CategoriesController {
             @ApiResponse(responseCode = "204", description = "success"),
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
-            @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.MANAGE_CATEGORY + "]"),
+            @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.CATEGORY_MANAGE + "]"),
             @ApiResponse(responseCode = "404", description = "category does not exist"),
             @ApiResponse(responseCode = "409", description = "category with such name already exist")
         }
@@ -78,14 +78,14 @@ public class CategoriesController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Secured({ AuthRoles.MANAGE_CATEGORY })
+    @Secured({ AuthRoles.CATEGORY_MANAGE })
     @Operation(
         summary = "removes category",
         security = @SecurityRequirement(name = BEARER),
         responses = {
             @ApiResponse(responseCode = "204", description = "success"),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
-            @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.MANAGE_CATEGORY + "]"),
+            @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.CATEGORY_MANAGE + "]"),
             @ApiResponse(responseCode = "404", description = "category does not exist"),
         }
     )

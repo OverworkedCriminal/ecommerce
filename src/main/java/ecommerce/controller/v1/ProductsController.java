@@ -58,7 +58,7 @@ public class ProductsController {
     }
 
     @PostMapping("")
-    @Secured({ AuthRoles.CREATE_PRODUCT })
+    @Secured({ AuthRoles.PRODUCT_CREATE })
     @Operation(
         summary = "create product",
         security = @SecurityRequirement(name = BEARER),
@@ -66,7 +66,7 @@ public class ProductsController {
             @ApiResponse(responseCode = "200", description = "success"),
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
-            @ApiResponse(responseCode = "403", description = "user lacks role " + AuthRoles.CREATE_PRODUCT)
+            @ApiResponse(responseCode = "403", description = "user lacks role " + AuthRoles.PRODUCT_CREATE)
         }
     )
     public OutProductDetails postProduct(
@@ -91,14 +91,14 @@ public class ProductsController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Secured({ AuthRoles.DELETE_PRODUCT })
+    @Secured({ AuthRoles.PRODUCT_DELETE })
     @Operation(
         summary = "delete product (mark it as inactive)",
         security = @SecurityRequirement(name = BEARER),
         responses = {
             @ApiResponse(responseCode = "204", description = "success"),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
-            @ApiResponse(responseCode = "403", description = "user lacks role " + AuthRoles.DELETE_PRODUCT),
+            @ApiResponse(responseCode = "403", description = "user lacks role " + AuthRoles.PRODUCT_DELETE),
             @ApiResponse(responseCode = "404", description = "product does not exist")
         }
     )
@@ -109,7 +109,7 @@ public class ProductsController {
     }
 
     @PatchMapping("/{id}")
-    @Secured({ AuthRoles.CREATE_PRODUCT, AuthRoles.UPDATE_PRODUCT })
+    @Secured({ AuthRoles.PRODUCT_CREATE, AuthRoles.PRODUCT_UPDATE })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(
         summary = "update part of the product",
@@ -120,7 +120,7 @@ public class ProductsController {
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
             @ApiResponse(
                 responseCode = "403",
-                description = "user lacks any of the roles [" + AuthRoles.CREATE_PRODUCT + ", " + AuthRoles.UPDATE_PRODUCT + "]"),
+                description = "user lacks any of the roles [" + AuthRoles.PRODUCT_CREATE + ", " + AuthRoles.PRODUCT_UPDATE + "]"),
             @ApiResponse(responseCode = "404", description = "product does not exist")
         }
     )

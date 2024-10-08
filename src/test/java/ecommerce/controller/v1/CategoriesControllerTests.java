@@ -64,7 +64,7 @@ public class CategoriesControllerTests {
             HttpStatus.OK,
             SecurityMockMvcRequestPostProcessors
                 .jwt()
-                .authorities(new SimpleGrantedAuthority(AuthRoles.MANAGE_CATEGORY))
+                .authorities(new SimpleGrantedAuthority(AuthRoles.CATEGORY_MANAGE))
         );
     }
 
@@ -96,7 +96,7 @@ public class CategoriesControllerTests {
                     .with(
                         SecurityMockMvcRequestPostProcessors
                             .jwt()
-                            .authorities(new SimpleGrantedAuthority(AuthRoles.MANAGE_CATEGORY))
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.CATEGORY_MANAGE))
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.BAD_REQUEST));
@@ -132,7 +132,7 @@ public class CategoriesControllerTests {
                     .with(
                         SecurityMockMvcRequestPostProcessors
                             .jwt()
-                            .authorities(new SimpleGrantedAuthority(AuthRoles.MANAGE_CATEGORY))
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.CATEGORY_MANAGE))
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.CONFLICT));
@@ -167,7 +167,7 @@ public class CategoriesControllerTests {
             HttpStatus.NO_CONTENT,
             SecurityMockMvcRequestPostProcessors
                 .jwt()
-                .authorities(new SimpleGrantedAuthority(AuthRoles.MANAGE_CATEGORY))
+                .authorities(new SimpleGrantedAuthority(AuthRoles.CATEGORY_MANAGE))
         );
     }
 
@@ -199,7 +199,7 @@ public class CategoriesControllerTests {
                     .with(
                         SecurityMockMvcRequestPostProcessors
                             .jwt()
-                            .authorities(new SimpleGrantedAuthority(AuthRoles.MANAGE_CATEGORY))
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.CATEGORY_MANAGE))
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.BAD_REQUEST));
@@ -235,7 +235,7 @@ public class CategoriesControllerTests {
                     .with(
                         SecurityMockMvcRequestPostProcessors
                             .jwt()
-                            .authorities(new SimpleGrantedAuthority(AuthRoles.MANAGE_CATEGORY))
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.CATEGORY_MANAGE))
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.CONFLICT));
@@ -259,7 +259,7 @@ public class CategoriesControllerTests {
                     .with(
                         SecurityMockMvcRequestPostProcessors
                             .jwt()
-                            .authorities(new SimpleGrantedAuthority(AuthRoles.MANAGE_CATEGORY))
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.CATEGORY_MANAGE))
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));
@@ -289,7 +289,7 @@ public class CategoriesControllerTests {
             HttpStatus.NO_CONTENT,
             SecurityMockMvcRequestPostProcessors
                 .jwt()
-                .authorities(new SimpleGrantedAuthority(AuthRoles.MANAGE_CATEGORY))
+                .authorities(new SimpleGrantedAuthority(AuthRoles.CATEGORY_MANAGE))
         );
     }
 
@@ -323,7 +323,7 @@ public class CategoriesControllerTests {
                     .with(
                         SecurityMockMvcRequestPostProcessors
                             .jwt()
-                            .authorities(new SimpleGrantedAuthority(AuthRoles.MANAGE_CATEGORY))
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.CATEGORY_MANAGE))
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));

@@ -159,7 +159,7 @@ public class ProductsControllerTests {
                     .content(objectMapper.writeValueAsBytes(product))
                     .with(
                         SecurityMockMvcRequestPostProcessors.jwt()
-                            .authorities(new SimpleGrantedAuthority(AuthRoles.CREATE_PRODUCT))
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.PRODUCT_CREATE))
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.BAD_REQUEST));
@@ -186,7 +186,7 @@ public class ProductsControllerTests {
                     .content(objectMapper.writeValueAsBytes(product))
                     .with(
                         SecurityMockMvcRequestPostProcessors.jwt()
-                            .authorities(new SimpleGrantedAuthority(AuthRoles.CREATE_PRODUCT))
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.PRODUCT_CREATE))
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.OK));
@@ -345,7 +345,7 @@ public class ProductsControllerTests {
                     .with(
                         SecurityMockMvcRequestPostProcessors
                             .jwt()
-                            .authorities(new SimpleGrantedAuthority(AuthRoles.DELETE_PRODUCT))
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.PRODUCT_DELETE))
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NO_CONTENT));
@@ -393,7 +393,7 @@ public class ProductsControllerTests {
                     .with(
                         SecurityMockMvcRequestPostProcessors
                             .jwt()
-                            .authorities(new SimpleGrantedAuthority(AuthRoles.DELETE_PRODUCT))
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.PRODUCT_DELETE))
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));
@@ -456,7 +456,7 @@ public class ProductsControllerTests {
                     .with(
                         SecurityMockMvcRequestPostProcessors
                             .jwt()
-                            .authorities(new SimpleGrantedAuthority(AuthRoles.UPDATE_PRODUCT))
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.PRODUCT_UPDATE))
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.BAD_REQUEST));
@@ -472,7 +472,7 @@ public class ProductsControllerTests {
             HttpStatus.NO_CONTENT,
             SecurityMockMvcRequestPostProcessors
                 .jwt()
-                .authorities(new SimpleGrantedAuthority(AuthRoles.CREATE_PRODUCT))
+                .authorities(new SimpleGrantedAuthority(AuthRoles.PRODUCT_CREATE))
         );
     }
 
@@ -482,7 +482,7 @@ public class ProductsControllerTests {
             HttpStatus.NO_CONTENT,
             SecurityMockMvcRequestPostProcessors
                 .jwt()
-                .authorities(new SimpleGrantedAuthority(AuthRoles.UPDATE_PRODUCT))
+                .authorities(new SimpleGrantedAuthority(AuthRoles.PRODUCT_UPDATE))
         );
     }
 
@@ -548,7 +548,7 @@ public class ProductsControllerTests {
                     .with(
                         SecurityMockMvcRequestPostProcessors
                             .jwt()
-                            .authorities(new SimpleGrantedAuthority(AuthRoles.UPDATE_PRODUCT))
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.PRODUCT_UPDATE))
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));

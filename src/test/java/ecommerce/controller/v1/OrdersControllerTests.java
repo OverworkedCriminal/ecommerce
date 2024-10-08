@@ -155,7 +155,7 @@ public class OrdersControllerTests {
             HttpStatus.NO_CONTENT, 
             SecurityMockMvcRequestPostProcessors
                 .jwt()
-                .authorities(new SimpleGrantedAuthority(AuthRoles.UPDATE_ORDER_COMPLETED_AT))
+                .authorities(new SimpleGrantedAuthority(AuthRoles.ORDER_UPDATE_COMPLETED_AT))
         );
     }
 
@@ -193,7 +193,7 @@ public class OrdersControllerTests {
                     .with(
                         SecurityMockMvcRequestPostProcessors
                             .jwt()
-                            .authorities(new SimpleGrantedAuthority(AuthRoles.UPDATE_ORDER_COMPLETED_AT))
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.ORDER_UPDATE_COMPLETED_AT))
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.BAD_REQUEST));
@@ -217,7 +217,7 @@ public class OrdersControllerTests {
                     .with(
                         SecurityMockMvcRequestPostProcessors
                             .jwt()
-                            .authorities(new SimpleGrantedAuthority(AuthRoles.UPDATE_ORDER_COMPLETED_AT))
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.ORDER_UPDATE_COMPLETED_AT))
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.CONFLICT));
