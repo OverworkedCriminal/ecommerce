@@ -2,7 +2,6 @@ package ecommerce.dto.products;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.lang.Nullable;
@@ -15,14 +14,12 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 public record InProductsFilters(
     @Nullable @NullableNotBlank String name,
     @Nullable @DecimalMin(value = "0", inclusive = true) BigDecimal minPrice,
     @Nullable @DecimalMin(value = "0", inclusive = true) BigDecimal maxPrice,
-    @Nullable @Size(min = 1) List<@NotNull Long> categories
+    @Nullable Long category
 ) {
 
     public Specification<Product> intoSpecification() {
@@ -47,9 +44,9 @@ public record InProductsFilters(
                 final Predicate predicate = cb.lessThanOrEqualTo(path, maxPrice);
                 predicates.add(predicate);
             }
-            if (this.categories != null && !this.categories.isEmpty()) {
-                final Join<Product, Category> join = root.join("categories", JoinType.INNER);
-                final Predicate predicate = join.get("id").in(this.categories);
+            if (this.category != null) {
+                final Join<Product, Category> join = root.join("category", JoinType.INNER);
+                final Predicate predicate =  cb.equal(join.get("id"), this.category);
                 predicates.add(predicate);
             }
 

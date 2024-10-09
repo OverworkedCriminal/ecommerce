@@ -2,7 +2,6 @@ package ecommerce.service.categories;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import ecommerce.dto.categories.InCategory;
 import ecommerce.dto.categories.OutCategory;
@@ -54,14 +53,13 @@ public class CategoriesService implements ICategoriesService {
         try {
             categoriesRepository.save(categoryEntity);
         } catch (DataIntegrityViolationException e) {
-            throw new ConflictException("category with such name already exist");
+            throw new ConflictException("category with such name already exist: " + e.getMessage());
         }
 
         log.info("updated category with id={}", id);
     }
 
     @Override
-    @Transactional
     public void deleteCategory(long id) {
         log.trace("id={}", id);
 
@@ -69,11 +67,11 @@ public class CategoriesService implements ICategoriesService {
             .findById(id)
             .orElseThrow(() -> NotFoundException.category(id));
 
-        categoryEntity.getProducts()
-            .stream()
-            .forEach(product -> product.getCategories().remove(categoryEntity));
-
-        categoriesRepository.delete(categoryEntity);
+        try {
+            categoriesRepository.delete(categoryEntity);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("category cannot be removed: " + e.getMessage());
+        }
         log.info("deleted category with id={}", id);
     }
 

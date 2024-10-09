@@ -140,7 +140,7 @@ public class CategoriesControllerTests {
 
     //#endregion
 
-    //#region putProduct
+    //#region putCategory
 
     private void test_putCategory_authorization(
         HttpStatus expectedStatus,
@@ -309,10 +309,12 @@ public class CategoriesControllerTests {
         );
     }
 
-    @Test
-    public void deleteCategory_notFoundException() throws Exception {
+    private void test_deleteCategory_exceptionHandling(
+        HttpStatus expectedStatus,
+        Class<? extends Exception> exceptionClass
+    ) throws Exception {
         Mockito
-            .doThrow(NotFoundException.class)
+            .doThrow(exceptionClass)
             .when(categoriesService)
             .deleteCategory(Mockito.anyLong());
 
@@ -326,7 +328,17 @@ public class CategoriesControllerTests {
                             .authorities(new SimpleGrantedAuthority(AuthRoles.CATEGORY_MANAGE))
                     )
             )
-            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));
+            .andExpect(ControllerTestUtils.expectStatus(expectedStatus));
+    }
+
+    @Test
+    public void deleteCategory_notFoundException() throws Exception {
+        test_deleteCategory_exceptionHandling(HttpStatus.NOT_FOUND, NotFoundException.class);
+    }
+
+    @Test
+    public void deleteCategory_conflictException() throws Exception {
+        test_deleteCategory_exceptionHandling(HttpStatus.CONFLICT, ConflictException.class);
     }
     
     //#endregion
