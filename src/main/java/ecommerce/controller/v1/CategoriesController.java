@@ -2,10 +2,13 @@ package ecommerce.controller.v1;
 
 import static ecommerce.configuration.docs.OpenApiConfiguration.BEARER;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,6 +38,17 @@ import lombok.RequiredArgsConstructor;
 public class CategoriesController {
 
     private final ICategoriesService categoriesService;
+
+    @GetMapping("")
+    @Operation(
+        summary = "fetch list of all categories",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "success")
+        }
+    )
+    public List<OutCategory> getCategories() {
+        return categoriesService.getCategories();
+    }
 
     @PostMapping("")
     @Secured({ AuthRoles.CATEGORY_MANAGE })

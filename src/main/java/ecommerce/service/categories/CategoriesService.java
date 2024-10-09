@@ -1,5 +1,8 @@
 package ecommerce.service.categories;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +22,18 @@ import lombok.extern.slf4j.Slf4j;
 public class CategoriesService implements ICategoriesService {
 
     private final CategoriesRepository categoriesRepository;
+
+    @Override
+    public List<OutCategory> getCategories() {
+        final var categoryEntities = categoriesRepository.findAll();
+        log.info("found categories count={}", categoryEntities.size());
+
+        final var outCategories = categoryEntities.stream()
+            .map(OutCategory::from)
+            .collect(Collectors.toList());
+
+        return outCategories;
+    }
 
     @Override
     public OutCategory postCategory(InCategory categoryIn) {

@@ -38,6 +38,19 @@ public class CategoriesControllerTests {
     @MockBean
     ICategoriesService categoriesService;
 
+    //#region getCategories
+
+    @Test
+    public void getCategories_statusCode200() throws Exception {
+        mvc
+            .perform(
+                MockMvcRequestBuilders.get("/api/v1/categories")
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.OK));
+    }
+
+    //#endregion
+
     //#region postCategory
 
     private void test_postCategory_authorization(

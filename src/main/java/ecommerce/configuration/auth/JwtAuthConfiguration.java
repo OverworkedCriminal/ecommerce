@@ -46,7 +46,8 @@ public class JwtAuthConfiguration {
                     .requestMatchers(
                         HttpMethod.GET,
                         "/api/v1/products",
-                        "/api/v1/products/*"
+                        "/api/v1/products/*",
+                        "/api/v1/categories"
                     ).permitAll()
                     .anyRequest().authenticated()
             )
