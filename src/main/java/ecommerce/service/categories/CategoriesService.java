@@ -27,10 +27,17 @@ public class CategoriesService implements ICategoriesService {
             .name(categoryIn.name())
             .build();
 
+        if (categoryIn.parentCategory() != null) {
+            final var parentCategoryEntity = categoriesRepository
+                .findById(categoryIn.parentCategory())
+                .orElseThrow(() -> NotFoundException.category(categoryIn.parentCategory()));
+            categoryEntity.setParentCategory(parentCategoryEntity);
+        }
+
         try {
             categoryEntity = categoriesRepository.save(categoryEntity);
         } catch (DataIntegrityViolationException e) {
-            throw new ConflictException("category with such name already exist");
+            throw new ConflictException("category with such name already exist" + e.getMessage());
         }
 
         log.info("created category with id={}", categoryEntity.getId());
