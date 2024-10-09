@@ -11,6 +11,7 @@ import ecommerce.dto.categories.InCategoryPatch;
 import ecommerce.dto.categories.OutCategory;
 import ecommerce.exception.ConflictException;
 import ecommerce.exception.NotFoundException;
+import ecommerce.exception.ValidationException;
 import ecommerce.repository.categories.CategoriesRepository;
 import ecommerce.repository.categories.entity.Category;
 import lombok.RequiredArgsConstructor;
@@ -79,6 +80,7 @@ public class CategoriesService implements ICategoriesService {
             final var parentCategoryEntity = categoriesRepository
                 .findById(patch.parentCategory())
                 .orElseThrow(() -> NotFoundException.category(patch.parentCategory()));
+            validateNoCategoriesCycle(parentCategoryEntity, categoryEntity);
             categoryEntity.setParentCategory(parentCategoryEntity);
         }
 
@@ -107,4 +109,17 @@ public class CategoriesService implements ICategoriesService {
         log.info("deleted category with id={}", id);
     }
 
+    private void validateNoCategoriesCycle(Category parent, Category self) {
+        if (parent.getId().equals(self.getId())) {
+            throw new ValidationException("category cannnot be its own parent");
+        }
+
+        Category ptr = parent;
+        while (ptr.getParentCategory() != null) {
+            ptr = ptr.getParentCategory();
+            if (ptr.getId().equals(self.getId())) {
+                throw new ValidationException("patching category would cause a cycle");
+            }
+        }
+    }
 }
