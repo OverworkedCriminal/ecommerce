@@ -21,7 +21,7 @@ import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.dto.categories.InCategory;
 import ecommerce.dto.categories.InCategoryPatch;
 import ecommerce.dto.categories.OutCategory;
-import ecommerce.service.categories.ICategoriesService;
+import ecommerce.service.categories.CategoriesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -37,7 +37,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CategoriesController {
 
-    private final ICategoriesService categoriesService;
+    private final CategoriesService categoriesService;
 
     @GetMapping("")
     @Operation(

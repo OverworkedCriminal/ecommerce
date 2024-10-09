@@ -23,7 +23,7 @@ import ecommerce.dto.categories.InCategory;
 import ecommerce.dto.categories.InCategoryPatch;
 import ecommerce.exception.ConflictException;
 import ecommerce.exception.NotFoundException;
-import ecommerce.service.categories.ICategoriesService;
+import ecommerce.service.categories.CategoriesService;
 import jakarta.annotation.Nullable;
 
 @WebMvcTest(CategoriesController.class)
@@ -36,7 +36,7 @@ public class CategoriesControllerTests {
     ObjectMapper objectMapper;
 
     @MockBean
-    ICategoriesService categoriesService;
+    CategoriesService categoriesService;
 
     //#region getCategories
 

@@ -26,12 +26,11 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class OrdersService implements IOrdersService {
+public class OrdersService {
 
     private final OrdersRepository ordersRepository;
     private final ProductsRepository productsRepository;
 
-    @Override
     @Transactional
     public OutOrder postOrder(
         Authentication user,

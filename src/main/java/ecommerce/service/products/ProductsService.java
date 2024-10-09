@@ -21,12 +21,11 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class ProductsService implements IProductsService {
+public class ProductsService {
 
     private final ProductsRepository productsRepository;
     private final CategoriesRepository categoriesRepository;
 
-    @Override
     public OutPage<OutProduct> getProducts(
         InProductsFilters filters,
         InPagination pagination
@@ -55,7 +54,6 @@ public class ProductsService implements IProductsService {
         return productsPage;
     }
 
-    @Override
     public OutProductDetails postProduct(InProduct product) {
         log.trace("{}", product);
 
@@ -79,7 +77,6 @@ public class ProductsService implements IProductsService {
         return savedProduct;
     }
 
-    @Override
     public OutProductDetails getProduct(long id) {
         log.trace("id={}", id);
 
@@ -93,7 +90,6 @@ public class ProductsService implements IProductsService {
         return product;
     }
 
-    @Override
     public void deleteProduct(long id) {
         log.trace("id={}", id);
 
@@ -107,7 +103,6 @@ public class ProductsService implements IProductsService {
         log.info("deleted product with id={}", id);
     }
 
-    @Override
     public void patchProduct(long id, InProductPatch productPatch) {
         log.trace("id={}", id);
         log.trace("{}", productPatch);

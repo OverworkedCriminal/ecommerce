@@ -26,7 +26,7 @@ import ecommerce.dto.products.InProduct;
 import ecommerce.dto.products.InProductPatch;
 import ecommerce.dto.products.OutProductDetails;
 import ecommerce.exception.NotFoundException;
-import ecommerce.service.products.IProductsService;
+import ecommerce.service.products.ProductsService;
 
 @WebMvcTest(ProductsController.class)
 @Import(JwtAuthConfiguration.class)
@@ -38,7 +38,7 @@ public class ProductsControllerTests {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private IProductsService productsService;
+    private ProductsService productsService;
 
     //#region getProducts
 

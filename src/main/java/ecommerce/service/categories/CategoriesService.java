@@ -20,11 +20,10 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class CategoriesService implements ICategoriesService {
+public class CategoriesService {
 
     private final CategoriesRepository categoriesRepository;
 
-    @Override
     public List<OutCategory> getCategories() {
         final var categoryEntities = categoriesRepository.findAll();
         log.info("found categories count={}", categoryEntities.size());
@@ -36,7 +35,6 @@ public class CategoriesService implements ICategoriesService {
         return outCategories;
     }
 
-    @Override
     public OutCategory postCategory(InCategory categoryIn) {
         log.trace("{}", categoryIn);
 
@@ -63,8 +61,7 @@ public class CategoriesService implements ICategoriesService {
 
         return categoryOut;
     }
-
-    @Override
+    
     public void patchCategory(long id, InCategoryPatch patch) {
         log.trace("id={}", id);
         log.trace("{}", patch);
@@ -92,8 +89,7 @@ public class CategoriesService implements ICategoriesService {
 
         log.info("updated category with id={}", id);
     }
-
-    @Override
+    
     public void deleteCategory(long id) {
         log.trace("id={}", id);
 

@@ -22,7 +22,7 @@ import ecommerce.dto.products.OutProduct;
 import ecommerce.dto.products.OutProductDetails;
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
-import ecommerce.service.products.IProductsService;
+import ecommerce.service.products.ProductsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -40,7 +40,7 @@ import static ecommerce.configuration.docs.OpenApiConfiguration.BEARER;
 @RequiredArgsConstructor
 public class ProductsController {
 
-    private final IProductsService productsService;
+    private final ProductsService productsService;
 
     @GetMapping("")
     @Operation(

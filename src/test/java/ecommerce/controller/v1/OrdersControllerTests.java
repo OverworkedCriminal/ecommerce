@@ -30,7 +30,7 @@ import ecommerce.dto.orders.InOrderCompletedAtUpdate;
 import ecommerce.dto.orders.InOrderProduct;
 import ecommerce.exception.ConflictException;
 import ecommerce.exception.ValidationException;
-import ecommerce.service.orders.IOrdersService;
+import ecommerce.service.orders.OrdersService;
 
 @WebMvcTest(OrdersController.class)
 @Import(JwtAuthConfiguration.class)
@@ -42,7 +42,7 @@ public class OrdersControllerTests {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private IOrdersService ordersService;
+    private OrdersService ordersService;
 
     //#region postOrder
 

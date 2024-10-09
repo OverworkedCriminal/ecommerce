@@ -18,7 +18,7 @@ import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.InOrderCompletedAtUpdate;
 import ecommerce.dto.orders.OutOrder;
-import ecommerce.service.orders.IOrdersService;
+import ecommerce.service.orders.OrdersService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OrdersController {
 
-    private final IOrdersService ordersService;
+    private final OrdersService ordersService;
 
     @PostMapping("")
     @Operation(
