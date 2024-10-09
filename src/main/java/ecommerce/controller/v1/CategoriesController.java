@@ -2,13 +2,16 @@ package ecommerce.controller.v1;
 
 import static ecommerce.configuration.docs.OpenApiConfiguration.BEARER;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.dto.categories.InCategory;
+import ecommerce.dto.categories.InCategoryPatch;
 import ecommerce.dto.categories.OutCategory;
 import ecommerce.service.categories.ICategoriesService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,6 +38,17 @@ import lombok.RequiredArgsConstructor;
 public class CategoriesController {
 
     private final ICategoriesService categoriesService;
+
+    @GetMapping("")
+    @Operation(
+        summary = "fetch list of all categories",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "success")
+        }
+    )
+    public List<OutCategory> getCategories() {
+        return categoriesService.getCategories();
+    }
 
     @PostMapping("")
     @Secured({ AuthRoles.CATEGORY_MANAGE })
@@ -54,7 +69,7 @@ public class CategoriesController {
         return categoriesService.postCategory(category);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Secured({ AuthRoles.CATEGORY_MANAGE })
     @Operation(
@@ -69,11 +84,11 @@ public class CategoriesController {
             @ApiResponse(responseCode = "409", description = "category with such name already exist")
         }
     )
-    public void putCategory(
+    public void patchCategory(
         @PathVariable long id,
-        @Validated @RequestBody InCategory category
+        @Validated @RequestBody InCategoryPatch category
     ) {
-        categoriesService.putCategory(id, category);
+        categoriesService.patchCategory(id, category);
     }
 
     @DeleteMapping("/{id}")

@@ -8,6 +8,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -36,6 +38,16 @@ public class Category {
 
     @Nonnull
     private String name;
+
+    @ManyToOne
+    @JoinColumn(
+        name = "parent_category_id",
+        nullable = true
+    )
+    private Category parentCategory;
+
+    @OneToMany(mappedBy = "parentCategory")
+    private List<Category> childCategories;
 
     @OneToMany(mappedBy = "category")
     List<Product> products;
