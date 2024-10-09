@@ -1,10 +1,7 @@
 package ecommerce.dto.products;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.stream.Collectors;
 
-import ecommerce.dto.categories.OutCategory;
 import ecommerce.repository.products.entity.Product;
 import lombok.Builder;
 
@@ -14,7 +11,7 @@ public record OutProductDetails(
     String name,
     String description,
     BigDecimal price,
-    List<OutCategory> categories
+    long category
 ) {
     public static OutProductDetails from(Product product) {
         return OutProductDetails.builder()
@@ -22,12 +19,7 @@ public record OutProductDetails(
             .name(product.getName())
             .description(product.getDescription())
             .price(product.getPrice())
-            .categories(
-                product.getCategories()
-                    .stream()
-                    .map(OutCategory::from)
-                    .collect(Collectors.toList())
-            )
+            .category(product.getCategory().getId())
             .build();
     }
 }

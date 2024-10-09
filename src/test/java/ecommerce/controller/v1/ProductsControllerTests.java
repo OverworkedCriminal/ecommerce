@@ -1,8 +1,6 @@
 package ecommerce.controller.v1;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -175,7 +173,7 @@ public class ProductsControllerTests {
             "name",
             "description",
             new BigDecimal(10.00),
-            Collections.emptyList()
+            1
         );
 
         mvc
@@ -202,7 +200,7 @@ public class ProductsControllerTests {
             "name",
             "description",
             new BigDecimal(10.00),
-            Collections.emptyList()
+            1
         );
 
         mvc
@@ -225,7 +223,7 @@ public class ProductsControllerTests {
             "name",
             "description",
             new BigDecimal(10.00),
-            Collections.emptyList()
+            1
         );
 
         mvc
@@ -249,7 +247,7 @@ public class ProductsControllerTests {
             "",
             "description",
             new BigDecimal(10.00),
-            Collections.emptyList()
+            1
         );
 
         test_postProduct_validationException(product);
@@ -261,7 +259,7 @@ public class ProductsControllerTests {
             "name",
             "",
             new BigDecimal(10.00),
-            Collections.emptyList()
+            1
         );
 
         test_postProduct_validationException(product);
@@ -273,22 +271,7 @@ public class ProductsControllerTests {
             "name",
             "description",
             BigDecimal.ZERO,
-            Collections.emptyList()
-        );
-
-        test_postProduct_validationException(product);
-    }
-
-    @Test
-    public void postProduct_categoryNull() throws Exception {
-        final var categories = new ArrayList<Long>();
-        categories.add(null);
-        
-        final var product = new InProduct(
-            "name",
-            "description",
-            new BigDecimal(14.99),
-            categories
+            1
         );
 
         test_postProduct_validationException(product);
@@ -305,7 +288,7 @@ public class ProductsControllerTests {
             "name",
             "description",
             new BigDecimal(24.99),
-            Collections.emptyList()
+            1
         );
 
         Mockito
@@ -427,7 +410,7 @@ public class ProductsControllerTests {
             "name",
             "description",
             new BigDecimal(14.99),
-            Collections.emptyList()
+            1L
         );
 
         var requestBuilder = MockMvcRequestBuilders
@@ -527,19 +510,9 @@ public class ProductsControllerTests {
     }
 
     @Test
-    public void patchProduct_categoryNull() throws Exception {
-        final var categories = new ArrayList<Long>();
-        categories.add(null);
-
-        final var patch = new InProductPatch(null, null, null, categories);
-
-        test_patchProduct_validation(patch);
-    }
-
-    @Test
     public void patchProduct_notFound() throws Exception {
-        final var patch = new InProductPatch("name", "description", new BigDecimal(24.99), Collections.emptyList());
-        
+        final var patch = new InProductPatch("name", "description", new BigDecimal(24.99), 1L);
+
         Mockito
             .doThrow(NotFoundException.class)
             .when(productsService)
