@@ -4,6 +4,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import ecommerce.dto.categories.InCategory;
+import ecommerce.dto.categories.InCategoryPatch;
 import ecommerce.dto.categories.OutCategory;
 import ecommerce.exception.ConflictException;
 import ecommerce.exception.NotFoundException;
@@ -48,15 +49,24 @@ public class CategoriesService implements ICategoriesService {
     }
 
     @Override
-    public void putCategory(long id, InCategory categoryIn) {
+    public void patchCategory(long id, InCategoryPatch patch) {
         log.trace("id={}", id);
-        log.trace("{}", categoryIn);
+        log.trace("{}", patch);
 
         final var categoryEntity = categoriesRepository
             .findById(id)
             .orElseThrow(() -> NotFoundException.category(id));
 
-        categoryEntity.setName(categoryIn.name());
+        if (patch.name() != null) {
+            categoryEntity.setName(patch.name());
+        }
+        if (patch.parentCategory() != null) {
+            final var parentCategoryEntity = categoriesRepository
+                .findById(patch.parentCategory())
+                .orElseThrow(() -> NotFoundException.category(patch.parentCategory()));
+            categoryEntity.setParentCategory(parentCategoryEntity);
+        }
+
         try {
             categoriesRepository.save(categoryEntity);
         } catch (DataIntegrityViolationException e) {

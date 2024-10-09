@@ -6,9 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.dto.categories.InCategory;
+import ecommerce.dto.categories.InCategoryPatch;
 import ecommerce.dto.categories.OutCategory;
 import ecommerce.service.categories.ICategoriesService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,7 +55,7 @@ public class CategoriesController {
         return categoriesService.postCategory(category);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Secured({ AuthRoles.CATEGORY_MANAGE })
     @Operation(
@@ -69,11 +70,11 @@ public class CategoriesController {
             @ApiResponse(responseCode = "409", description = "category with such name already exist")
         }
     )
-    public void putCategory(
+    public void patchCategory(
         @PathVariable long id,
-        @Validated @RequestBody InCategory category
+        @Validated @RequestBody InCategoryPatch category
     ) {
-        categoriesService.putCategory(id, category);
+        categoriesService.patchCategory(id, category);
     }
 
     @DeleteMapping("/{id}")
