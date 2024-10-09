@@ -11,7 +11,7 @@ public record OutProductDetails(
     String name,
     String description,
     BigDecimal price,
-    long category
+    Long category
 ) {
     public static OutProductDetails from(Product product) {
         return OutProductDetails.builder()

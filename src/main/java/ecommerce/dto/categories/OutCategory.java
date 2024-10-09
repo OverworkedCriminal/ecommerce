@@ -5,7 +5,7 @@ import lombok.Builder;
 
 @Builder
 public record OutCategory(
-    long id,
+    Long id,
     String name
 ) {
 

@@ -29,13 +29,13 @@ import lombok.Setter;
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long id;
+    private Long id;
 
     /**
      * when false, product was deleted
      */
     @Nonnull
-    private boolean active;
+    private Boolean active;
 
     @Nonnull
     private String name;

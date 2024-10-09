@@ -52,8 +52,8 @@ public class OrdersControllerTests {
     ) throws Exception {
         final var order = new InOrder(
             List.of(
-                new InOrderProduct(1, 10),
-                new InOrderProduct(2, 15)
+                new InOrderProduct(1L, 10),
+                new InOrderProduct(2L, 15)
             )
         );
 
@@ -111,7 +111,7 @@ public class OrdersControllerTests {
     public void postOrder_productsContainQuantityZero() throws Exception {
         final var order = new InOrder(
             List.of(
-                new InOrderProduct(1, 0)
+                new InOrderProduct(1L, 0)
             )
         );
         test_postOrder_validation(order);

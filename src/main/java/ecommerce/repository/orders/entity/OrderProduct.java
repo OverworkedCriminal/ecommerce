@@ -28,7 +28,7 @@ import lombok.Setter;
 public class OrderProduct {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long id;
+    private Long id;
 
     @ManyToOne(
         fetch = FetchType.EAGER,
@@ -52,5 +52,5 @@ public class OrderProduct {
     @Nonnull
     private BigDecimal price;
     @Nonnull
-    private int quantity;
+    private Integer quantity;
 }

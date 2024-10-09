@@ -30,9 +30,9 @@ public class CollectionUtilsTets {
     @Test
     public void containsDuplicates_identityFn_noDuplicates() {
         final var collection = List.of(
-            new InOrderProduct(1, 10),
-            new InOrderProduct(2, 20),
-            new InOrderProduct(3, 30)
+            new InOrderProduct(1L, 10),
+            new InOrderProduct(2L, 20),
+            new InOrderProduct(3L, 30)
         );
 
         final var result = CollectionUtils.containsDuplicates(collection, InOrderProduct::productId);
@@ -43,9 +43,9 @@ public class CollectionUtilsTets {
     @Test
     public void containsDuplicates_identityFn_duplicates() {
         final var collection = List.of(
-            new InOrderProduct(1, 10),
-            new InOrderProduct(1, 20),
-            new InOrderProduct(3, 30)
+            new InOrderProduct(1L, 10),
+            new InOrderProduct(1L, 20),
+            new InOrderProduct(3L, 30)
         );
 
         final var result = CollectionUtils.containsDuplicates(collection, InOrderProduct::productId);

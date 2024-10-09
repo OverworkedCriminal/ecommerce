@@ -7,7 +7,7 @@ import lombok.Builder;
 @Builder
 public record OutOrderProduct(
     OutProduct product,
-    int quantity
+    Integer quantity
 ) {
 
     public static OutOrderProduct from(OrderProduct orderProduct) {

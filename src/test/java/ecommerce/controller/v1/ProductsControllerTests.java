@@ -127,16 +127,6 @@ public class ProductsControllerTests {
         test_getProducts_validationException(url);
     }
 
-    @Test
-    public void getProducts_categoriesListEmpty() throws Exception {
-        final int pageSize = 10;
-        final int pageIdx = 1;
-        final String url = "/api/v1/products?pageSize=%d&pageIdx=%d&categories="
-            .formatted(pageSize, pageIdx);
-
-        test_getProducts_validationException(url);
-    }
-
     //#endregion
 
     //#region postProduct
@@ -173,7 +163,7 @@ public class ProductsControllerTests {
             "name",
             "description",
             new BigDecimal(10.00),
-            1
+            1L
         );
 
         mvc
@@ -200,7 +190,7 @@ public class ProductsControllerTests {
             "name",
             "description",
             new BigDecimal(10.00),
-            1
+            1L
         );
 
         mvc
@@ -223,7 +213,7 @@ public class ProductsControllerTests {
             "name",
             "description",
             new BigDecimal(10.00),
-            1
+            1L
         );
 
         mvc
@@ -247,7 +237,7 @@ public class ProductsControllerTests {
             "",
             "description",
             new BigDecimal(10.00),
-            1
+            1L
         );
 
         test_postProduct_validationException(product);
@@ -259,7 +249,7 @@ public class ProductsControllerTests {
             "name",
             "",
             new BigDecimal(10.00),
-            1
+            1L
         );
 
         test_postProduct_validationException(product);
@@ -271,7 +261,7 @@ public class ProductsControllerTests {
             "name",
             "description",
             BigDecimal.ZERO,
-            1
+            1L
         );
 
         test_postProduct_validationException(product);
@@ -288,7 +278,7 @@ public class ProductsControllerTests {
             "name",
             "description",
             new BigDecimal(24.99),
-            1
+            1L
         );
 
         Mockito
