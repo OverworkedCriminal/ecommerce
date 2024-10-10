@@ -14,6 +14,7 @@ import ecommerce.exception.NotFoundException;
 import ecommerce.repository.categories.CategoriesRepository;
 import ecommerce.repository.products.ProductsRepository;
 import ecommerce.repository.products.entity.Product;
+import ecommerce.service.products.specification.SpecificationMapperInProductsFilters;
 import jakarta.persistence.criteria.Path;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ public class ProductsService {
 
     private final ProductsRepository productsRepository;
     private final CategoriesRepository categoriesRepository;
+    private final SpecificationMapperInProductsFilters specificationMapperInProductsFilters;
 
     public OutPage<OutProduct> getProducts(
         InProductsFilters filters,
@@ -37,8 +39,8 @@ public class ProductsService {
             pagination.pageIdx(),
             pagination.pageSize()
         );
-        final var specification = filters
-            .intoSpecification()
+        final var specification = specificationMapperInProductsFilters
+            .mapToSpecification(filters)
             .and((root, query, cb) -> {
                 final Path<Boolean> path = root.get("active");
                 return cb.equal(path, true);
