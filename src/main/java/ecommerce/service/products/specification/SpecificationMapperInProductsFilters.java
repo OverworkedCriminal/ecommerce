@@ -2,8 +2,6 @@ package ecommerce.service.products.specification;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
@@ -56,7 +54,7 @@ public class SpecificationMapperInProductsFilters {
 
             final var category = filters.category();
             if (category != null) {
-                final var categoryIds = findCategoriesTree(category);
+                final var categoryIds = categoriesRepository.findCategoryIdsTree(category);
                 if (!categoryIds.isEmpty()) {
                     final Join<Product, Category> join = root.join("category", JoinType.INNER);
                     final Predicate predicate = join.get("id").in(categoryIds);
@@ -70,37 +68,5 @@ public class SpecificationMapperInProductsFilters {
                 return cb.and(predicates.toArray(new Predicate[0]));
             }
         };
-    }
-
-    /**
-     * Finds all child categories to categoryId and returns their ids.
-     * (categoryId is included in result Set)
-     * 
-     * @param categoryId
-     * @return
-     */
-    private Set<Long> findCategoriesTree(Long categoryId) {
-        // TODO: This function requires optimization
-        // Finding all categories can be achieved by single recursive query
-
-        final var categoryIds = new HashSet<Long>();
-
-        categoriesRepository
-            .findById(categoryId)
-            .ifPresent(category -> fillCategoryIds(categoryIds, category));
-
-        return categoryIds;
-    }
-
-    private static void fillCategoryIds(Set<Long> categoryIds, Category category) {
-        final var isUnique = categoryIds.add(category.getId());
-        if (!isUnique) {
-            log.error("detected cycle in categories relation id={}", category.getId());
-            return;
-        }
-
-        category
-            .getChildCategories()
-            .forEach(childCategory -> fillCategoryIds(categoryIds, childCategory));
     }
 }
