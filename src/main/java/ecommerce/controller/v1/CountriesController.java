@@ -4,13 +4,16 @@ import static ecommerce.configuration.docs.OpenApiConfiguration.BEARER;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import ecommerce.configuration.auth.AuthRoles;
@@ -76,5 +79,24 @@ public class CountriesController {
         @Validated @RequestBody InCountry country
     ) {
         return countriesService.postCountry(country);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Secured({ AuthRoles.COUNTRY_MANAGE })
+    @Operation(
+        summary = "delete country by changing active to false",
+        security = @SecurityRequirement(name = BEARER),
+        responses = {
+            @ApiResponse(responseCode = "204", description = "success"),
+            @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
+            @ApiResponse(responseCode = "403", description = "user lacs any of the roles [" + AuthRoles.COUNTRY_MANAGE + "]"),
+            @ApiResponse(responseCode = "404", description = "country does not exist or is not active"),
+        }
+    )
+    public void deleteCountry(
+        @PathVariable long id
+    ) {
+        countriesService.deleteCountry(id);
     }
 }
