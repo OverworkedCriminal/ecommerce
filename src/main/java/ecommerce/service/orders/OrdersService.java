@@ -15,6 +15,8 @@ import ecommerce.dto.orders.OutOrder;
 import ecommerce.exception.ConflictException;
 import ecommerce.exception.NotFoundException;
 import ecommerce.exception.ValidationException;
+import ecommerce.repository.addresses.entity.Address;
+import ecommerce.repository.countries.CountriesRepository;
 import ecommerce.repository.orders.OrdersRepository;
 import ecommerce.repository.orders.entity.Order;
 import ecommerce.repository.orders.entity.OrderProduct;
@@ -30,6 +32,7 @@ public class OrdersService {
 
     private final OrdersRepository ordersRepository;
     private final ProductsRepository productsRepository;
+    private final CountriesRepository countriesRepository;
 
     @Transactional
     public OutOrder postOrder(
@@ -39,6 +42,18 @@ public class OrdersService {
         log.trace("{}", orderIn);
 
         validatePostOrderNoDuplicatedProducts(orderIn);
+
+        final var addressIn = orderIn.address();
+        final var countryEntity = countriesRepository
+            .findByIdAndActiveTrue(addressIn.country())
+            .orElseThrow(() -> NotFoundException.country(addressIn.country()));
+        final var addressEntity = Address.builder()
+            .street(addressIn.street())
+            .house(addressIn.house())
+            .postalCode(addressIn.postalCode())
+            .city(addressIn.postalCode())
+            .country(countryEntity)
+            .build();
 
         // Map<ProductID, Quantity>
         final var productsInQuantity = orderIn.products()
@@ -74,6 +89,7 @@ public class OrdersService {
 
         final var orderEntity = Order.builder()
             .username(user.getName())
+            .address(addressEntity)
             .orderedAt(LocalDateTime.now())
             .completedAt(null)
             .price(summedPrice)

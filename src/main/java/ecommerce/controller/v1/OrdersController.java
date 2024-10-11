@@ -44,7 +44,8 @@ public class OrdersController {
         responses = {
             @ApiResponse(responseCode = "200", description = "success"),
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
-            @ApiResponse(responseCode = "401", description = "user is unauthenticated")
+            @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
+            @ApiResponse(responseCode = "404", description = "any of the products or country does not exist")
         }
     )
     public OutOrder postOrder(
