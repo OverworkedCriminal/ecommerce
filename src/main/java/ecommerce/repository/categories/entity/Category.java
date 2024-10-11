@@ -4,6 +4,7 @@ import java.util.List;
 
 import ecommerce.repository.products.entity.Product;
 import jakarta.annotation.Nonnull;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,12 +20,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(
-    name = "categories",
-    uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "name" })
-    }
-)
+@Table(name = "categories")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -37,6 +32,7 @@ public class Category {
     private Long id;
 
     @Nonnull
+    @Column(unique = true)
     private String name;
 
     @ManyToOne
