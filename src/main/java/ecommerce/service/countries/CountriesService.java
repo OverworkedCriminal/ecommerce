@@ -73,4 +73,14 @@ public class CountriesService {
         final var outCountry = OutCountry.from(countryEntity);
         return outCountry;
     }
+
+    public void deleteCountry(long id) {
+        final var country = countriesRepository
+            .findByIdAndActiveTrue(id)
+            .orElseThrow(() -> NotFoundException.country(id));
+
+        country.setActive(false);
+        countriesRepository.save(country);
+        log.info("deleted country with id={}", id);
+    }
 }

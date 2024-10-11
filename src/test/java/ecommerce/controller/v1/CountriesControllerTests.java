@@ -189,4 +189,68 @@ public class CountriesControllerTests {
     }
 
     //#endregion
+
+    //#region deleteCountry
+
+    private void test_deleteCountry_authorization(
+        HttpStatus expectedStatus,
+        @Nullable RequestPostProcessor postProcessor
+    ) throws Exception {
+        var requestBuilder = MockMvcRequestBuilders
+            .delete("/api/v1/countries/1");
+        if (postProcessor != null) {
+            requestBuilder = requestBuilder.with(postProcessor);
+        }
+        
+        mvc
+            .perform(requestBuilder)
+            .andExpect(ControllerTestUtils.expectStatus(expectedStatus));
+    }
+
+    @Test
+    public void deleteCountry_statusCode204() throws Exception {
+        test_deleteCountry_authorization(
+            HttpStatus.NO_CONTENT,
+            SecurityMockMvcRequestPostProcessors
+                .jwt()
+                .authorities(new SimpleGrantedAuthority(AuthRoles.COUNTRY_MANAGE))
+        );
+    }
+
+    @Test
+    public void deleteCountry_unauthorized() throws Exception {
+        test_deleteCountry_authorization(
+            HttpStatus.UNAUTHORIZED, 
+            null
+        );
+    }
+
+    @Test
+    public void deleteCountry_forbidden() throws Exception {
+        test_deleteCountry_authorization(
+            HttpStatus.FORBIDDEN, 
+            SecurityMockMvcRequestPostProcessors.jwt()
+        );
+    }
+
+    @Test
+    public void deleteCountry_notFound() throws Exception {
+        Mockito
+            .doThrow(NotFoundException.class)
+            .when(countriesService)
+            .deleteCountry(Mockito.anyLong());
+
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .delete("/api/v1/countries/1")
+                    .with(
+                        SecurityMockMvcRequestPostProcessors
+                            .jwt()
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.COUNTRY_MANAGE))
+                    )
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));
+    }
+    //#endregion
 }
