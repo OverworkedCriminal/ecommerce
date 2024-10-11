@@ -20,7 +20,9 @@ import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.configuration.auth.JwtAuthConfiguration;
 import ecommerce.controller.utils.ControllerTestUtils;
 import ecommerce.dto.countries.InCountry;
+import ecommerce.dto.countries.OutCountry;
 import ecommerce.exception.ConflictException;
+import ecommerce.exception.NotFoundException;
 import ecommerce.service.countries.CountriesService;
 import jakarta.annotation.Nullable;
 
@@ -35,6 +37,53 @@ public class CountriesControllerTests {
 
     @MockBean
     private CountriesService countriesService;
+
+    //#region getCountry
+
+    private void test_getCountry_responseStatus(HttpStatus expectedStatus) throws Exception {
+        mvc
+            .perform(
+                MockMvcRequestBuilders.get("/api/v1/countries/1")
+            )
+            .andExpect(ControllerTestUtils.expectStatus(expectedStatus));
+    }
+
+    @Test
+    public void getCountry_statusCode200() throws Exception {
+        Mockito
+            .doReturn(new OutCountry(1L, "name"))
+            .when(countriesService)
+            .getCountry(Mockito.anyLong());
+
+        test_getCountry_responseStatus(HttpStatus.OK);
+    }
+
+    @Test
+    public void getCountry_notFound() throws Exception {
+        Mockito
+            .doThrow(NotFoundException.class)
+            .when(countriesService)
+            .getCountry(Mockito.anyLong());
+
+        test_getCountry_responseStatus(HttpStatus.NOT_FOUND);
+    }
+
+    //#endregion
+
+    //#region getCountries
+
+    @Test
+    public void getCountries_statusCode200() throws Exception {
+        mvc
+            .perform(
+                MockMvcRequestBuilders.get("/api/v1/countries")
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.OK));
+    }
+
+    //#endregion
+
+    //#region postCountry
 
     private void test_postCountry_authorization(
         HttpStatus expectedStatus,
@@ -98,7 +147,7 @@ public class CountriesControllerTests {
 
         Mockito
             .verify(countriesService, Mockito.never())
-            .postProduct(Mockito.any());
+            .postCountry(Mockito.any());
     }
 
     @Test
@@ -120,7 +169,7 @@ public class CountriesControllerTests {
         Mockito
             .doThrow(ConflictException.class)
             .when(countriesService)
-            .postProduct(Mockito.any());
+            .postCountry(Mockito.any());
 
         final var country = new InCountry("name");
 
@@ -138,4 +187,6 @@ public class CountriesControllerTests {
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.CONFLICT));
     }
+
+    //#endregion
 }

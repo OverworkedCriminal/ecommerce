@@ -1,11 +1,15 @@
 package ecommerce.service.countries;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import ecommerce.dto.countries.InCountry;
 import ecommerce.dto.countries.OutCountry;
 import ecommerce.exception.ConflictException;
+import ecommerce.exception.NotFoundException;
 import ecommerce.repository.countries.CountriesRepository;
 import ecommerce.repository.countries.entity.Country;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +22,27 @@ public class CountriesService {
 
     private final CountriesRepository countriesRepository;
 
-    public OutCountry postProduct(InCountry inCountry) {
+    public OutCountry getCountry(long id) {
+        final var countryEntity = countriesRepository
+            .findByIdAndActiveTrue(id)
+            .orElseThrow(() -> NotFoundException.country(id));
+
+        final var outCountry = OutCountry.from(countryEntity);
+        return outCountry;
+    }
+
+    public List<OutCountry> getCountries() {
+        final var countryEntities = countriesRepository.findByActiveTrue();
+        log.info("found countries count={}", countryEntities.size());
+
+        final var outCountries = countryEntities.stream()
+            .map(OutCountry::from)
+            .collect(Collectors.toList());
+
+        return outCountries;
+    }
+
+    public OutCountry postCountry(InCountry inCountry) {
         log.trace("{}", inCountry);
 
         var countryEntity = Country.builder()

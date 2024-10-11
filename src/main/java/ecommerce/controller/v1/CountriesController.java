@@ -2,8 +2,12 @@ package ecommerce.controller.v1;
 
 import static ecommerce.configuration.docs.OpenApiConfiguration.BEARER;
 
+import java.util.List;
+
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +34,31 @@ public class CountriesController {
 
     private final CountriesService countriesService;
 
+    @GetMapping("/{id}")
+    @Operation(
+        summary = "fetch active country by id",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "success"),
+            @ApiResponse(responseCode = "404", description = "country with such ID does not exist or is inactive")
+        }
+    )
+    public OutCountry getCountry(
+        @PathVariable long id
+    ) {
+        return countriesService.getCountry(id);
+    }
+
+    @GetMapping("")
+    @Operation(
+        summary = "fetch all active countries",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "success")
+        }
+    )
+    public List<OutCountry> getCountries() {
+        return countriesService.getCountries();
+    }
+
     @PostMapping("")
     @Secured({ AuthRoles.COUNTRY_MANAGE })
     @Operation(
@@ -46,6 +75,6 @@ public class CountriesController {
     public OutCountry postCountry(
         @Validated @RequestBody InCountry country
     ) {
-        return countriesService.postProduct(country);
+        return countriesService.postCountry(country);
     }
 }
