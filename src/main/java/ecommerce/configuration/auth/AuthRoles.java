@@ -12,4 +12,6 @@ public class AuthRoles {
     public static final String ORDER_UPDATE_COMPLETED_AT = "ecommerce_update_order_completed_at";
 
     public static final String CATEGORY_MANAGE = "ecommerce_manage_category";
+
+    public static final String COUNTRY_MANAGE = "ecommerce_manage_country";
 }

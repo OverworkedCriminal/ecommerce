@@ -21,4 +21,9 @@ public class NotFoundException extends RuntimeException {
         return new NotFoundException(message);
     }
 
+    public static NotFoundException country(long id) {
+        final var message = "country with id=%d not found".formatted(id);
+        return new NotFoundException(message);
+    }
+
 }
