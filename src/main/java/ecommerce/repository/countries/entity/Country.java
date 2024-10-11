@@ -1,6 +1,7 @@
 package ecommerce.repository.countries.entity;
 
 import jakarta.annotation.Nonnull;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -28,5 +29,6 @@ public class Country {
     private Boolean active;
 
     @Nonnull
+    @Column(unique = true)
     private String name;
 }
