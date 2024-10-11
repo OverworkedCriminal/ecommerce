@@ -26,6 +26,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -85,7 +86,7 @@ public class CategoriesController {
         }
     )
     public void patchCategory(
-        @PathVariable long id,
+        @NotNull @PathVariable Long id,
         @Validated @RequestBody InCategoryPatch category
     ) {
         categoriesService.patchCategory(id, category);
@@ -105,7 +106,7 @@ public class CategoriesController {
         }
     )
     public void deleteCategory(
-        @PathVariable long id
+        @NotNull @PathVariable Long id
     ) {
         categoriesService.deleteCategory(id);
     }

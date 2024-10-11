@@ -27,6 +27,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
 import static ecommerce.configuration.docs.OpenApiConfiguration.BEARER;
@@ -84,7 +85,7 @@ public class ProductsController {
         }
     )
     public OutProductDetails getProduct(
-        @PathVariable long id
+        @NotNull @PathVariable Long id
     ) {
         return productsService.getProduct(id);
     }
@@ -103,7 +104,7 @@ public class ProductsController {
         }
     )
     public void deleteProduct(
-        @PathVariable long id
+        @NotNull @PathVariable Long id
     ) {
         productsService.deleteProduct(id);
     }
@@ -125,7 +126,7 @@ public class ProductsController {
         }
     )
     public void patchProduct(
-        @PathVariable long id,
+        @NotNull @PathVariable Long id,
         @Validated @RequestBody InProductPatch productPatch
     ) {
         productsService.patchProduct(id, productPatch);

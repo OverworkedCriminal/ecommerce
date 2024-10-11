@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -46,7 +47,7 @@ public class CountriesController {
         }
     )
     public OutCountry getCountry(
-        @PathVariable long id
+        @NotNull @PathVariable Long id
     ) {
         return countriesService.getCountry(id);
     }
@@ -95,7 +96,7 @@ public class CountriesController {
         }
     )
     public void deleteCountry(
-        @PathVariable long id
+        @NotNull @PathVariable Long id
     ) {
         countriesService.deleteCountry(id);
     }
