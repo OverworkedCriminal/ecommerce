@@ -23,6 +23,19 @@ public class CountriesService {
 
     private final CountriesRepository countriesRepository;
 
+    /**
+     * Finds country by ID and active=true or throws NotFoundException
+     * 
+     * @param id
+     * @return
+     */
+    public Country findByIdActive(long id) {
+        final var country = countriesRepository
+            .findByIdAndActiveTrue(id)
+            .orElseThrow(() -> NotFoundException.country(id));
+        return country;
+    }
+
     public OutCountry getCountry(long id) {
         final var countryEntity = findByIdActive(id);
         log.info("found country with id={}", id);
@@ -78,18 +91,5 @@ public class CountriesService {
         country.setActive(false);
         countriesRepository.save(country);
         log.info("deleted country with id={}", id);
-    }
-
-    /**
-     * Finds country by ID and active=true or throws NotFoundException
-     * 
-     * @param id
-     * @return
-     */
-    private Country findByIdActive(long id) {
-        final var country = countriesRepository
-            .findByIdAndActiveTrue(id)
-            .orElseThrow(() -> NotFoundException.country(id));
-        return country;
     }
 }
