@@ -1,4 +1,4 @@
-package ecommerce.service.products.specification;
+package ecommerce.service.products.mapper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class SpecificationMapperInProductsFilters {
+public class ProductsSpecificationMapper {
 
     private final CategoriesRepository categoriesRepository;
 

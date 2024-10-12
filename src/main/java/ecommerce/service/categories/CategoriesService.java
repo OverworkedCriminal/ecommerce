@@ -14,6 +14,7 @@ import ecommerce.exception.NotFoundException;
 import ecommerce.exception.ValidationException;
 import ecommerce.repository.categories.CategoriesRepository;
 import ecommerce.repository.categories.entity.Category;
+import ecommerce.service.categories.mapper.CategoriesMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,12 +25,25 @@ public class CategoriesService {
 
     private final CategoriesRepository categoriesRepository;
 
+    /**
+     * Finds category by ID or throw NotFoundException when not found
+     * 
+     * @param id
+     * @return
+     */
+    public Category findCategoryById(long id) {
+        final var category = categoriesRepository
+            .findById(id)
+            .orElseThrow(() -> NotFoundException.category(id));
+        return category;
+    }
+
     public List<OutCategory> getCategories() {
         final var categoryEntities = categoriesRepository.findAll();
         log.info("found categories count={}", categoryEntities.size());
 
         final var outCategories = categoryEntities.stream()
-            .map(OutCategory::from)
+            .map(CategoriesMapper::fromEntity)
             .collect(Collectors.toList());
 
         return outCategories;
@@ -38,26 +52,22 @@ public class CategoriesService {
     public OutCategory postCategory(InCategory categoryIn) {
         log.trace("{}", categoryIn);
 
-        var categoryEntity = Category.builder()
-            .name(categoryIn.name())
-            .build();
-
+        Category parentCategoryEntity = null;
         if (categoryIn.parentCategory() != null) {
-            final var parentCategoryEntity = categoriesRepository
-                .findById(categoryIn.parentCategory())
-                .orElseThrow(() -> NotFoundException.category(categoryIn.parentCategory()));
-            categoryEntity.setParentCategory(parentCategoryEntity);
+            parentCategoryEntity = findCategoryById(categoryIn.parentCategory());
         }
+
+        var categoryEntity = CategoriesMapper.intoEntity(categoryIn, parentCategoryEntity);
 
         try {
             categoryEntity = categoriesRepository.save(categoryEntity);
+            log.info("created category with id={}", categoryEntity.getId());
+
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException("category with such name already exist" + e.getMessage());
         }
 
-        log.info("created category with id={}", categoryEntity.getId());
-
-        final var categoryOut = OutCategory.from(categoryEntity);
+        final var categoryOut = CategoriesMapper.fromEntity(categoryEntity);
 
         return categoryOut;
     }
@@ -66,43 +76,41 @@ public class CategoriesService {
         log.trace("id={}", id);
         log.trace("{}", patch);
 
-        final var categoryEntity = categoriesRepository
-            .findById(id)
-            .orElseThrow(() -> NotFoundException.category(id));
+        final var categoryEntity = findCategoryById(id);
 
-        if (patch.name() != null) {
-            categoryEntity.setName(patch.name());
+        final var name = patch.name();
+        if (name != null) {
+            categoryEntity.setName(name);
         }
-        if (patch.parentCategory() != null) {
-            final var parentCategoryEntity = categoriesRepository
-                .findById(patch.parentCategory())
-                .orElseThrow(() -> NotFoundException.category(patch.parentCategory()));
+
+        final var parentCategoryId = patch.parentCategory();
+        if (parentCategoryId != null) {
+            final var parentCategoryEntity = findCategoryById(parentCategoryId);
             validateNoCategoriesCycle(parentCategoryEntity, categoryEntity);
             categoryEntity.setParentCategory(parentCategoryEntity);
         }
 
         try {
             categoriesRepository.save(categoryEntity);
+            log.info("updated category with id={}", id);
+
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException("category with such name already exist: " + e.getMessage());
         }
-
-        log.info("updated category with id={}", id);
     }
     
     public void deleteCategory(long id) {
         log.trace("id={}", id);
 
-        final var categoryEntity = categoriesRepository
-            .findById(id)
-            .orElseThrow(() -> NotFoundException.category(id));
+        final var categoryEntity = findCategoryById(id);
 
         try {
             categoriesRepository.delete(categoryEntity);
+            log.info("deleted category with id={}", id);
+
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException("category cannot be removed: " + e.getMessage());
         }
-        log.info("deleted category with id={}", id);
     }
 
     private void validateNoCategoriesCycle(Category parent, Category self) {

@@ -57,10 +57,7 @@ public class Order {
     @OneToMany(
         mappedBy = "order",
         fetch = FetchType.EAGER,
-        orphanRemoval = true,
-        cascade = {
-            CascadeType.PERSIST,
-        }
+        orphanRemoval = true
     )
     private List<OrderProduct> orderProducts;
 }

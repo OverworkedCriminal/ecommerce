@@ -1,13 +1,15 @@
 package ecommerce.service.orders;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ecommerce.dto.addresses.InAddress;
 import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.InOrderCompletedAtUpdate;
 import ecommerce.dto.orders.InOrderProduct;
@@ -15,13 +17,16 @@ import ecommerce.dto.orders.OutOrder;
 import ecommerce.exception.ConflictException;
 import ecommerce.exception.NotFoundException;
 import ecommerce.exception.ValidationException;
-import ecommerce.repository.addresses.entity.Address;
-import ecommerce.repository.countries.CountriesRepository;
+import ecommerce.repository.orders.OrderProductsRepository;
 import ecommerce.repository.orders.OrdersRepository;
-import ecommerce.repository.orders.entity.Order;
-import ecommerce.repository.orders.entity.OrderProduct;
 import ecommerce.repository.products.ProductsRepository;
+import ecommerce.repository.products.entity.Product;
+import ecommerce.service.addresses.mapper.AddressesMapper;
+import ecommerce.service.countries.CountriesService;
+import ecommerce.service.orders.mapper.OrderProductsMapper;
+import ecommerce.service.orders.mapper.OrdersMapper;
 import ecommerce.service.utils.CollectionUtils;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,9 +35,10 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class OrdersService {
 
+    private final CountriesService countriesService;
     private final OrdersRepository ordersRepository;
+    private final OrderProductsRepository orderProductsRepository;
     private final ProductsRepository productsRepository;
-    private final CountriesRepository countriesRepository;
 
     @Transactional
     public OutOrder postOrder(
@@ -44,64 +50,59 @@ public class OrdersService {
         validatePostOrderNoDuplicatedProducts(orderIn);
 
         final var addressIn = orderIn.address();
-        final var countryEntity = countriesRepository
-            .findByIdAndActiveTrue(addressIn.country())
-            .orElseThrow(() -> NotFoundException.country(addressIn.country()));
-        final var addressEntity = Address.builder()
-            .street(addressIn.street())
-            .house(addressIn.house())
-            .postalCode(addressIn.postalCode())
-            .city(addressIn.postalCode())
-            .country(countryEntity)
-            .build();
+        final var countryEntity = countriesService.findByIdActive(addressIn.country());
+        final var addressEntity = AddressesMapper.intoEntity(addressIn, countryEntity);
 
-        // Map<ProductID, Quantity>
-        final var productsInQuantity = orderIn.products()
+        final Map<Long, InOrderProduct> orderProductInById = orderIn.products()
             .stream()
             .collect(Collectors.toMap(
-                product -> product.productId(),
-                product -> product.quantity())
-            );
+                orderProductIn -> orderProductIn.productId(),
+                orderProductIn -> orderProductIn
+            ));
 
-        final var productIds = productsInQuantity.keySet();
+        final var productIds = orderProductInById.keySet();
         final var productEntities = productsRepository.findByActiveTrueAndIdIn(productIds);
         if (productEntities.size() != productIds.size()) {
             throw new NotFoundException("product not found");
         }
-
         log.info("found all ordered products count={}", productEntities.size());
 
-        final var orderProductEntities = productEntities.stream()
-            .map(product -> OrderProduct.builder()
-                .product(product)
-                .price(product.getPrice())
-                .quantity(productsInQuantity.get(product.getId()))
-                .build()
-            )
+        final List<Tuple> orderProducts = productEntities.stream()
+            .map(product -> new Tuple(
+                orderProductInById.get(product.getId()),
+                product
+            ))
             .collect(Collectors.toList());
-        final var summedPrice = orderProductEntities.stream()
-            .map(orderProduct -> {
-                final var price = orderProduct.getPrice();
-                final var quantity = BigDecimal.valueOf(orderProduct.getQuantity()); 
-                return price.multiply(quantity);
+
+        final var summedPrice = orderProducts.stream()
+            .map(orderedProduct -> {
+                final var quantity = orderedProduct.inOrderProduct().quantity();
+                final var price = orderedProduct.product().getPrice();
+                return price.multiply(BigDecimal.valueOf(quantity));
             })
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        final var orderEntity = Order.builder()
-            .username(user.getName())
-            .address(addressEntity)
-            .orderedAt(LocalDateTime.now())
-            .completedAt(null)
-            .price(summedPrice)
-            .orderProducts(orderProductEntities)
-            .build();
-        orderProductEntities
-            .forEach(orderProductEntity -> orderProductEntity.setOrder(orderEntity));
-
+        final var orderEntity = OrdersMapper.intoEntity(
+            orderIn,
+            user.getName(),
+            addressEntity,
+            summedPrice
+        );
         final var savedOrderEntity = ordersRepository.save(orderEntity);
-        log.info("created order with id={}", savedOrderEntity.getId());
+        log.info("created order with id={}", orderEntity.getId());
 
-        final var orderOut = OutOrder.from(savedOrderEntity);
+        final var orderProductEntities = orderProducts.stream()
+            .map(orderedProduct -> OrderProductsMapper.intoEntity(
+                orderedProduct.inOrderProduct(),
+                orderedProduct.product(),
+                savedOrderEntity
+            ))
+            .collect(Collectors.toList());
+        final var savedOrderProductEntities = orderProductsRepository.saveAll(orderProductEntities);
+        log.info("created order products count={}", savedOrderProductEntities.size());
+
+        savedOrderEntity.setOrderProducts(savedOrderProductEntities);
+        final var orderOut = OrdersMapper.fromEntity(savedOrderEntity);
 
         return orderOut;
     }
@@ -134,5 +135,9 @@ public class OrdersService {
             throw new ValidationException("order products contain duplicates");
         }
     }
-
 }
+
+record Tuple (
+    InOrderProduct inOrderProduct,
+    Product product
+) {}
