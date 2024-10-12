@@ -17,6 +17,7 @@ import ecommerce.dto.orders.OutOrder;
 import ecommerce.exception.ConflictException;
 import ecommerce.exception.NotFoundException;
 import ecommerce.exception.ValidationException;
+import ecommerce.repository.addresses.AddressesRepository;
 import ecommerce.repository.orders.OrderProductsRepository;
 import ecommerce.repository.orders.OrdersRepository;
 import ecommerce.repository.products.ProductsRepository;
@@ -39,6 +40,7 @@ public class OrdersService {
     private final OrdersRepository ordersRepository;
     private final OrderProductsRepository orderProductsRepository;
     private final ProductsRepository productsRepository;
+    private final AddressesRepository addressesRepository;
 
     @Transactional
     public OutOrder postOrder(
@@ -105,6 +107,27 @@ public class OrdersService {
         final var orderOut = OrdersMapper.fromEntity(savedOrderEntity);
 
         return orderOut;
+    }
+
+    public void putOrderAddress(Authentication user, @NotNull Long id, InAddress address) {
+        log.trace("id={}", id);
+        log.trace("{}", address);
+
+        final var orderEntity = ordersRepository
+            .findByIdAndUsername(id, user.getName())
+            .orElseThrow(() -> {
+                return new NotFoundException(
+                    "order with id=%d does not exist or does not belong to user=%s"
+                        .formatted(id, user.getName())
+                );
+            });
+
+        final var countryEntity = countriesService.findByIdActive(address.country());
+        final var addressEntity = AddressesMapper.intoEntity(address, countryEntity);
+        addressEntity.setId(orderEntity.getAddress().getId());
+
+        addressesRepository.save(addressEntity);
+        log.info("updated order with id={} address", orderEntity.getId());
     }
 
     public void putOrderCompletedAt(long id, InOrderCompletedAtUpdate update) {

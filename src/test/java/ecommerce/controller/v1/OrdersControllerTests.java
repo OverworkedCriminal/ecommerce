@@ -370,6 +370,201 @@ public class OrdersControllerTests {
 
     //#endregion
 
+    //#region putOrderAddress
+
+    private void test_putOrderAddress_authorization(
+        HttpStatus expectedStatus,
+        RequestPostProcessor postProcessor
+    ) throws Exception {
+        final var address = new InAddress(
+            "street",
+            "12", 
+            "12-345",
+            "Baldur's Gate",
+            1L
+        );
+
+        var requestBuilder = MockMvcRequestBuilders
+            .put("/api/v1/orders/1/address")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsBytes(address));
+        if (postProcessor != null) {
+            requestBuilder = requestBuilder.with(postProcessor);
+        }
+
+        mvc
+            .perform(requestBuilder)
+            .andExpect(ControllerTestUtils.expectStatus(expectedStatus));
+    }
+
+    @Test
+    public void putOrderAddress_statusCode204() throws Exception {
+        test_putOrderAddress_authorization(
+            HttpStatus.NO_CONTENT,
+            SecurityMockMvcRequestPostProcessors.jwt()
+        );
+    }
+
+    @Test
+    public void putOrderAddress_unauthorized() throws Exception {
+        test_putOrderAddress_authorization(
+            HttpStatus.UNAUTHORIZED,
+            null
+        );
+    }
+
+    private void test_putOrderAddress_validation(InAddress address) throws Exception {
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .put("/api/v1/orders/1/address")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(address))
+                    .with(
+                        SecurityMockMvcRequestPostProcessors.jwt()
+                    )
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.BAD_REQUEST));
+    }
+    
+    @Test
+    public void putOrderAddress_addressStreetNull() throws Exception {
+        final var address = new InAddress(
+            null,
+            "12", 
+            "12-345", 
+            "Baldur's Gate", 
+            1L
+        );
+        test_putOrderAddress_validation(address);
+    }
+
+    @Test
+    public void putOrderAddress_addressStreetBlank() throws Exception {
+        final var address = new InAddress(
+            "",
+            "12", 
+            "12-345", 
+            "Baldur's Gate", 
+            1L
+        );
+        test_putOrderAddress_validation(address);
+    }
+
+    @Test
+    public void putOrderAddress_addressHouseNull() throws Exception {
+        final var address = new InAddress(
+            "street",
+            null, 
+            "12-345", 
+            "Baldur's Gate", 
+            1L
+        );
+        test_putOrderAddress_validation(address);
+    }
+
+    @Test
+    public void putOrderAddress_addressHouseBlank() throws Exception {
+        final var address = new InAddress(
+            "street",
+            "", 
+            "12-345", 
+            "Baldur's Gate", 
+            1L
+        );
+        test_putOrderAddress_validation(address);
+    }
+
+    @Test
+    public void putOrderAddress_addressPostalCodeNull() throws Exception {
+        final var address = new InAddress(
+            "street",
+            "12", 
+            null,
+            "Baldur's Gate", 
+            1L
+        );
+        test_putOrderAddress_validation(address);
+    }
+
+    @Test
+    public void putOrderAddress_addressPostalCodeBlank() throws Exception {
+        final var address = new InAddress(
+            "street",
+            "12", 
+            "",
+            "Baldur's Gate", 
+            1L
+        );
+        test_putOrderAddress_validation(address);
+    }
+
+    @Test
+    public void putOrderAddress_addressCityNull() throws Exception {
+        final var address = new InAddress(
+            "street",
+            "12", 
+            "12-345",
+            null,
+            1L
+        );
+        test_putOrderAddress_validation(address);
+    }
+
+    @Test
+    public void putOrderAddress_addressCityBlank() throws Exception {
+        final var address = new InAddress(
+            "street",
+            "12", 
+            "12-345",
+            "",
+            1L
+        );
+        test_putOrderAddress_validation(address);
+    }
+
+    @Test
+    public void putOrderAddress_addressCountryNull() throws Exception {
+        final var address = new InAddress(
+            "street",
+            "12", 
+            "12-345",
+            "Baldur's Gate",
+            null
+        );
+        test_putOrderAddress_validation(address);
+    }
+
+    @Test
+    public void putOrderAddress_notFoundException() throws Exception {
+        final var address = new InAddress(
+            "street",
+            "12", 
+            "12-345",
+            "Baldur's Gate",
+            1L
+        );
+
+        Mockito
+            .doThrow(NotFoundException.class)
+            .when(ordersService)
+            .putOrderAddress(Mockito.any(), Mockito.anyLong(), Mockito.any());
+
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .put("/api/v1/orders/1/address")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(address))
+                    .with(
+                        SecurityMockMvcRequestPostProcessors.jwt()
+                    )
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));
+    }
+
+    //#endregion
+
     //#region putOrderCompletedAt
 
     private void test_putOrderCompletedAt_authorization(
