@@ -28,15 +28,16 @@ public class CountriesService {
      * 
      * @param id
      * @return
+     * @throws NotFoundException 
      */
-    public Country findByIdActive(long id) {
+    public Country findByIdActive(long id) throws NotFoundException {
         final var country = countriesRepository
             .findByIdAndActiveTrue(id)
             .orElseThrow(() -> NotFoundException.country(id));
         return country;
     }
 
-    public OutCountry getCountry(long id) {
+    public OutCountry getCountry(long id) throws NotFoundException {
         final var countryEntity = findByIdActive(id);
         log.info("found country with id={}", id);
 
@@ -55,7 +56,7 @@ public class CountriesService {
         return outCountries;
     }
 
-    public OutCountry postCountry(InCountry inCountry) {
+    public OutCountry postCountry(InCountry inCountry) throws ConflictException {
         log.trace("{}", inCountry);
 
         var countryEntity = CountriesMapper.intoEntity(inCountry);
@@ -84,7 +85,7 @@ public class CountriesService {
         return outCountry;
     }
 
-    public void deleteCountry(long id) {
+    public void deleteCountry(long id) throws NotFoundException {
         final var country = findByIdActive(id);
         log.info("found country with id={}", id);
 

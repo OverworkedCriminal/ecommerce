@@ -21,6 +21,9 @@ import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.dto.categories.InCategory;
 import ecommerce.dto.categories.InCategoryPatch;
 import ecommerce.dto.categories.OutCategory;
+import ecommerce.exception.ConflictException;
+import ecommerce.exception.NotFoundException;
+import ecommerce.exception.ValidationException;
 import ecommerce.service.categories.CategoriesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -61,12 +64,13 @@ public class CategoriesController {
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
             @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.CATEGORY_MANAGE + "]"),
+            @ApiResponse(responseCode = "404", description = "when parent category does not exist"),
             @ApiResponse(responseCode = "409", description = "category with such name already exist")
         }
     )
     public OutCategory postCategory(
         @Validated @RequestBody InCategory category
-    ) {
+    ) throws NotFoundException, ConflictException {
         return categoriesService.postCategory(category);
     }
 
@@ -88,7 +92,7 @@ public class CategoriesController {
     public void patchCategory(
         @NotNull @PathVariable Long id,
         @Validated @RequestBody InCategoryPatch category
-    ) {
+    ) throws NotFoundException, ConflictException, ValidationException {
         categoriesService.patchCategory(id, category);
     }
 
@@ -103,11 +107,12 @@ public class CategoriesController {
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
             @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.CATEGORY_MANAGE + "]"),
             @ApiResponse(responseCode = "404", description = "category does not exist"),
+            @ApiResponse(responseCode = "409", description = "category cannot be removed")
         }
     )
     public void deleteCategory(
         @NotNull @PathVariable Long id
-    ) {
+    ) throws NotFoundException, ConflictException {
         categoriesService.deleteCategory(id);
     }
 }

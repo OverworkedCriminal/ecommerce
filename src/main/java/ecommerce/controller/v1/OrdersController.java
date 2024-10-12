@@ -19,6 +19,9 @@ import ecommerce.dto.addresses.InAddress;
 import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.InOrderCompletedAtUpdate;
 import ecommerce.dto.orders.OutOrder;
+import ecommerce.exception.ConflictException;
+import ecommerce.exception.NotFoundException;
+import ecommerce.exception.ValidationException;
 import ecommerce.service.orders.OrdersService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -51,7 +54,7 @@ public class OrdersController {
     )
     public OutOrder postOrder(
         @Validated @RequestBody InOrder order
-    ) {
+    ) throws NotFoundException, ValidationException {
         final var auth = SecurityContextHolder.getContext().getAuthentication();
         return ordersService.postOrder(auth, order);
     }
@@ -71,7 +74,7 @@ public class OrdersController {
     public void putOrderAddress(
         @NotNull @PathVariable Long id,
         @Validated @RequestBody InAddress address
-    ) {
+    ) throws NotFoundException {
         final var auth = SecurityContextHolder.getContext().getAuthentication();
         ordersService.putOrderAddress(auth, id, address);
     }
@@ -93,7 +96,7 @@ public class OrdersController {
     public void putOrderCompletedAt(
         @NotNull @PathVariable Long id,
         @Validated @RequestBody InOrderCompletedAtUpdate update
-    ) {
+    ) throws NotFoundException, ConflictException, ValidationException {
         ordersService.putOrderCompletedAt(id, update);
     }
 

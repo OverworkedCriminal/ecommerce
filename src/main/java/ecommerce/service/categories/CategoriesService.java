@@ -30,8 +30,9 @@ public class CategoriesService {
      * 
      * @param id
      * @return
+     * @throws NotFoundException 
      */
-    public Category findCategoryById(long id) {
+    public Category findCategoryById(long id) throws NotFoundException {
         final var category = categoriesRepository
             .findById(id)
             .orElseThrow(() -> NotFoundException.category(id));
@@ -49,7 +50,9 @@ public class CategoriesService {
         return outCategories;
     }
 
-    public OutCategory postCategory(InCategory categoryIn) {
+    public OutCategory postCategory(
+        InCategory categoryIn
+    ) throws NotFoundException, ConflictException {
         log.trace("{}", categoryIn);
 
         Category parentCategoryEntity = null;
@@ -72,7 +75,10 @@ public class CategoriesService {
         return categoryOut;
     }
     
-    public void patchCategory(long id, InCategoryPatch patch) {
+    public void patchCategory(
+        long id,
+        InCategoryPatch patch
+    ) throws NotFoundException, ConflictException, ValidationException {
         log.trace("id={}", id);
         log.trace("{}", patch);
 
@@ -99,7 +105,7 @@ public class CategoriesService {
         }
     }
     
-    public void deleteCategory(long id) {
+    public void deleteCategory(long id) throws NotFoundException, ConflictException {
         log.trace("id={}", id);
 
         final var categoryEntity = findCategoryById(id);
@@ -113,7 +119,7 @@ public class CategoriesService {
         }
     }
 
-    private void validateNoCategoriesCycle(Category parent, Category self) {
+    private void validateNoCategoriesCycle(Category parent, Category self) throws ValidationException {
         if (parent.getId().equals(self.getId())) {
             throw new ValidationException("category cannnot be its own parent");
         }

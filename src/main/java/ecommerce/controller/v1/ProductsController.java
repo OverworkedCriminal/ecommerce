@@ -22,6 +22,7 @@ import ecommerce.dto.products.OutProduct;
 import ecommerce.dto.products.OutProductDetails;
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
+import ecommerce.exception.NotFoundException;
 import ecommerce.service.products.ProductsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -67,12 +68,13 @@ public class ProductsController {
             @ApiResponse(responseCode = "200", description = "success"),
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
-            @ApiResponse(responseCode = "403", description = "user lacks role " + AuthRoles.PRODUCT_CREATE)
+            @ApiResponse(responseCode = "403", description = "user lacks role " + AuthRoles.PRODUCT_CREATE),
+            @ApiResponse(responseCode = "404", description = "category does not exist")
         }
     )
     public OutProductDetails postProduct(
         @Validated @RequestBody InProduct product
-    ) {
+    ) throws NotFoundException {
         return productsService.postProduct(product);
     }
 
@@ -86,7 +88,7 @@ public class ProductsController {
     )
     public OutProductDetails getProduct(
         @NotNull @PathVariable Long id
-    ) {
+    ) throws NotFoundException {
         return productsService.getProduct(id);
     }
 
@@ -105,7 +107,7 @@ public class ProductsController {
     )
     public void deleteProduct(
         @NotNull @PathVariable Long id
-    ) {
+    ) throws NotFoundException {
         productsService.deleteProduct(id);
     }
 
@@ -128,7 +130,7 @@ public class ProductsController {
     public void patchProduct(
         @NotNull @PathVariable Long id,
         @Validated @RequestBody InProductPatch productPatch
-    ) {
+    ) throws NotFoundException {
         productsService.patchProduct(id, productPatch);
     }
 }

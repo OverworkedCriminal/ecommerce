@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.dto.countries.InCountry;
 import ecommerce.dto.countries.OutCountry;
+import ecommerce.exception.ConflictException;
+import ecommerce.exception.NotFoundException;
 import ecommerce.service.countries.CountriesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -48,7 +50,7 @@ public class CountriesController {
     )
     public OutCountry getCountry(
         @NotNull @PathVariable Long id
-    ) {
+    ) throws NotFoundException {
         return countriesService.getCountry(id);
     }
 
@@ -78,7 +80,7 @@ public class CountriesController {
     )
     public OutCountry postCountry(
         @Validated @RequestBody InCountry country
-    ) {
+    ) throws ConflictException {
         return countriesService.postCountry(country);
     }
 
@@ -97,7 +99,7 @@ public class CountriesController {
     )
     public void deleteCountry(
         @NotNull @PathVariable Long id
-    ) {
+    ) throws NotFoundException {
         countriesService.deleteCountry(id);
     }
 }

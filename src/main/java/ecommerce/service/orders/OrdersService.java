@@ -27,7 +27,6 @@ import ecommerce.service.countries.CountriesService;
 import ecommerce.service.orders.mapper.OrderProductsMapper;
 import ecommerce.service.orders.mapper.OrdersMapper;
 import ecommerce.service.utils.CollectionUtils;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,7 +45,7 @@ public class OrdersService {
     public OutOrder postOrder(
         Authentication user,
         InOrder orderIn
-    ) {
+    ) throws NotFoundException, ValidationException {
         log.trace("{}", orderIn);
 
         validatePostOrderNoDuplicatedProducts(orderIn);
@@ -109,7 +108,11 @@ public class OrdersService {
         return orderOut;
     }
 
-    public void putOrderAddress(Authentication user, @NotNull Long id, InAddress address) {
+    public void putOrderAddress(
+        Authentication user,
+        Long id,
+        InAddress address
+    ) throws NotFoundException {
         log.trace("id={}", id);
         log.trace("{}", address);
 
@@ -130,7 +133,10 @@ public class OrdersService {
         log.info("updated order with id={} address", orderEntity.getId());
     }
 
-    public void putOrderCompletedAt(long id, InOrderCompletedAtUpdate update) {
+    public void putOrderCompletedAt(
+        long id,
+        InOrderCompletedAtUpdate update
+    ) throws NotFoundException, ConflictException, ValidationException {
         log.trace("id={}", id);
         log.trace("{}", update);
 
@@ -151,7 +157,7 @@ public class OrdersService {
         log.info("patched order with id={}", id);
     }
 
-    private void validatePostOrderNoDuplicatedProducts(InOrder order) {
+    private void validatePostOrderNoDuplicatedProducts(InOrder order) throws ValidationException {
         final var products = order.products();
 
         if (CollectionUtils.containsDuplicates(products, InOrderProduct::productId)) {

@@ -57,7 +57,7 @@ public class ProductsService {
         return productsPage;
     }
 
-    public OutProductDetails postProduct(InProduct product) {
+    public OutProductDetails postProduct(InProduct product) throws NotFoundException {
         log.trace("{}", product);
 
         final var categoryEntity = categoriesService.findCategoryById(product.category());
@@ -72,7 +72,7 @@ public class ProductsService {
         return savedProduct;
     }
 
-    public OutProductDetails getProduct(long id) {
+    public OutProductDetails getProduct(long id) throws NotFoundException {
         log.trace("id={}", id);
 
         final var entity = findProductByIdActive(id);
@@ -83,7 +83,7 @@ public class ProductsService {
         return product;
     }
 
-    public void deleteProduct(long id) {
+    public void deleteProduct(long id) throws NotFoundException {
         log.trace("id={}", id);
 
         final var product = findProductByIdActive(id);
@@ -95,7 +95,7 @@ public class ProductsService {
         log.info("deleted product with id={}", id);
     }
 
-    public void patchProduct(long id, InProductPatch productPatch) {
+    public void patchProduct(long id, InProductPatch productPatch) throws NotFoundException {
         log.trace("id={}", id);
         log.trace("{}", productPatch);
 
@@ -120,7 +120,7 @@ public class ProductsService {
         log.info("patched product with id={}", id);
     }
 
-    private Product findProductByIdActive(long id) {
+    private Product findProductByIdActive(long id) throws NotFoundException {
         final var product = productsRepository
             .findByIdAndActiveTrue(id)
             .orElseThrow(() -> NotFoundException.product(id));
