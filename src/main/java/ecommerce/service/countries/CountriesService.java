@@ -12,6 +12,7 @@ import ecommerce.exception.ConflictException;
 import ecommerce.exception.NotFoundException;
 import ecommerce.repository.countries.CountriesRepository;
 import ecommerce.repository.countries.entity.Country;
+import ecommerce.service.countries.mapper.CountriesMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,12 +23,24 @@ public class CountriesService {
 
     private final CountriesRepository countriesRepository;
 
-    public OutCountry getCountry(long id) {
-        final var countryEntity = countriesRepository
+    /**
+     * Finds country by ID and active=true or throws NotFoundException
+     * 
+     * @param id
+     * @return
+     */
+    public Country findByIdActive(long id) {
+        final var country = countriesRepository
             .findByIdAndActiveTrue(id)
             .orElseThrow(() -> NotFoundException.country(id));
+        return country;
+    }
 
-        final var outCountry = OutCountry.from(countryEntity);
+    public OutCountry getCountry(long id) {
+        final var countryEntity = findByIdActive(id);
+        log.info("found country with id={}", id);
+
+        final var outCountry = CountriesMapper.fromEntity(countryEntity);
         return outCountry;
     }
 
@@ -36,7 +49,7 @@ public class CountriesService {
         log.info("found countries count={}", countryEntities.size());
 
         final var outCountries = countryEntities.stream()
-            .map(OutCountry::from)
+            .map(CountriesMapper::fromEntity)
             .collect(Collectors.toList());
 
         return outCountries;
@@ -45,10 +58,7 @@ public class CountriesService {
     public OutCountry postCountry(InCountry inCountry) {
         log.trace("{}", inCountry);
 
-        var countryEntity = Country.builder()
-            .active(true)
-            .name(inCountry.name())
-            .build();
+        var countryEntity = CountriesMapper.intoEntity(inCountry);
 
         try {
             countryEntity = countriesRepository.save(countryEntity);
@@ -70,14 +80,13 @@ public class CountriesService {
             log.info("updated country with id={}", countryEntity.getId());
         }
 
-        final var outCountry = OutCountry.from(countryEntity);
+        final var outCountry = CountriesMapper.fromEntity(countryEntity);
         return outCountry;
     }
 
     public void deleteCountry(long id) {
-        final var country = countriesRepository
-            .findByIdAndActiveTrue(id)
-            .orElseThrow(() -> NotFoundException.country(id));
+        final var country = findByIdActive(id);
+        log.info("found country with id={}", id);
 
         country.setActive(false);
         countriesRepository.save(country);

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import ecommerce.configuration.auth.AuthRoles;
+import ecommerce.dto.addresses.InAddress;
 import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.InOrderCompletedAtUpdate;
 import ecommerce.dto.orders.OutOrder;
@@ -44,7 +45,8 @@ public class OrdersController {
         responses = {
             @ApiResponse(responseCode = "200", description = "success"),
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
-            @ApiResponse(responseCode = "401", description = "user is unauthenticated")
+            @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
+            @ApiResponse(responseCode = "404", description = "any of the products or country does not exist")
         }
     )
     public OutOrder postOrder(
@@ -52,6 +54,26 @@ public class OrdersController {
     ) {
         final var auth = SecurityContextHolder.getContext().getAuthentication();
         return ordersService.postOrder(auth, order);
+    }
+
+    @PutMapping("/{id}/address")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(
+        summary = "updates address of the order",
+        security = @SecurityRequirement(name = BEARER),
+        responses = {
+            @ApiResponse(responseCode = "204", description = "success"),
+            @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
+            @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
+            @ApiResponse(responseCode = "404", description = "any of the products or country does not exist")
+        }
+    )
+    public void putOrderAddress(
+        @NotNull @PathVariable Long id,
+        @Validated @RequestBody InAddress address
+    ) {
+        final var auth = SecurityContextHolder.getContext().getAuthentication();
+        ordersService.putOrderAddress(auth, id, address);
     }
 
     @PutMapping("/{id}/completed-at")
