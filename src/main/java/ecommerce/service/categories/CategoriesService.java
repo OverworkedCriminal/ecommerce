@@ -25,6 +25,19 @@ public class CategoriesService {
 
     private final CategoriesRepository categoriesRepository;
 
+    /**
+     * Finds category by ID or throw NotFoundException when not found
+     * 
+     * @param id
+     * @return
+     */
+    public Category findCategoryById(long id) {
+        final var category = categoriesRepository
+            .findById(id)
+            .orElseThrow(() -> NotFoundException.category(id));
+        return category;
+    }
+
     public List<OutCategory> getCategories() {
         final var categoryEntities = categoriesRepository.findAll();
         log.info("found categories count={}", categoryEntities.size());
@@ -112,18 +125,5 @@ public class CategoriesService {
                 throw new ValidationException("patching category would cause a cycle");
             }
         }
-    }
-
-    /**
-     * Finds category by ID or throw NotFoundException when not found
-     * 
-     * @param id
-     * @return
-     */
-    private Category findCategoryById(long id) {
-        final var category = categoriesRepository
-            .findById(id)
-            .orElseThrow(() -> NotFoundException.category(id));
-        return category;
     }
 }

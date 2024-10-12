@@ -11,10 +11,11 @@ import ecommerce.dto.products.OutProductDetails;
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
 import ecommerce.exception.NotFoundException;
-import ecommerce.repository.categories.CategoriesRepository;
 import ecommerce.repository.products.ProductsRepository;
 import ecommerce.repository.products.entity.Product;
-import ecommerce.service.products.specification.SpecificationMapperInProductsFilters;
+import ecommerce.service.categories.CategoriesService;
+import ecommerce.service.products.mapper.ProductsMapper;
+import ecommerce.service.products.mapper.ProductsSpecificationMapper;
 import jakarta.persistence.criteria.Path;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,9 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ProductsService {
 
+    private final CategoriesService categoriesService;
     private final ProductsRepository productsRepository;
-    private final CategoriesRepository categoriesRepository;
-    private final SpecificationMapperInProductsFilters specificationMapperInProductsFilters;
+    private final ProductsSpecificationMapper productsSpecificationMapper;
 
     public OutPage<OutProduct> getProducts(
         InProductsFilters filters,
@@ -39,7 +40,7 @@ public class ProductsService {
             pagination.pageIdx(),
             pagination.pageSize()
         );
-        final var specification = specificationMapperInProductsFilters
+        final var specification = productsSpecificationMapper
             .mapToSpecification(filters)
             .and((root, query, cb) -> {
                 final Path<Boolean> path = root.get("active");
@@ -48,7 +49,7 @@ public class ProductsService {
 
         final var products = productsRepository
             .findAll(specification, pageRequest)
-            .map(OutProduct::from);
+            .map(ProductsMapper::fromEntity);
         log.info("found products count={}", products.getNumberOfElements());
 
         final var productsPage = OutPage.from(products);
@@ -59,22 +60,14 @@ public class ProductsService {
     public OutProductDetails postProduct(InProduct product) {
         log.trace("{}", product);
 
-        final var categoryEntity = categoriesRepository
-            .findById(product.category())
-            .orElseThrow(() -> NotFoundException.category(product.category()));
+        final var categoryEntity = categoriesService.findCategoryById(product.category());
+        log.info("found category with id={}", categoryEntity.getId());
 
-        final var entity = Product.builder()
-            .active(true)
-            .name(product.name())
-            .description(product.description())
-            .price(product.price())
-            .category(categoryEntity)
-            .build();
+        var entity = ProductsMapper.intoEntity(product, categoryEntity);
+        entity = productsRepository.save(entity);
+        log.info("created product with id={}", entity.getId());
 
-        final var savedEntity = productsRepository.save(entity);
-        log.info("created product with id={}", savedEntity.getId());
-
-        final var savedProduct = OutProductDetails.from(savedEntity);
+        final var savedProduct = ProductsMapper.fromEntityDetails(entity);
 
         return savedProduct;
     }
@@ -82,12 +75,10 @@ public class ProductsService {
     public OutProductDetails getProduct(long id) {
         log.trace("id={}", id);
 
-        final var entity = productsRepository
-            .findByIdAndActiveTrue(id)
-            .orElseThrow(() -> NotFoundException.product(id));
+        final var entity = findProductByIdActive(id);
         log.info("found product with id={}", id);
 
-        final var product = OutProductDetails.from(entity);
+        final var product = ProductsMapper.fromEntityDetails(entity);
 
         return product;
     }
@@ -95,9 +86,8 @@ public class ProductsService {
     public void deleteProduct(long id) {
         log.trace("id={}", id);
 
-        final var product = productsRepository
-            .findByIdAndActiveTrue(id)
-            .orElseThrow(() -> NotFoundException.product(id));
+        final var product = findProductByIdActive(id);
+        log.info("found product with id={}", id);
 
         product.setActive(false);
 
@@ -109,9 +99,8 @@ public class ProductsService {
         log.trace("id={}", id);
         log.trace("{}", productPatch);
 
-        final var product = productsRepository
-            .findByIdAndActiveTrue(id)
-            .orElseThrow(() -> NotFoundException.product(id));
+        final var product = findProductByIdActive(id);
+        log.info("found product with id={}", id);
 
         if (productPatch.name() != null) {
             product.setName(productPatch.name());
@@ -123,13 +112,18 @@ public class ProductsService {
             product.setPrice(productPatch.price());
         }
         if (productPatch.category() != null) {
-            final var categoryEntity = categoriesRepository
-                .findById(productPatch.category())
-                .orElseThrow(() -> NotFoundException.category(productPatch.category()));
+            final var categoryEntity = categoriesService.findCategoryById(productPatch.category());
             product.setCategory(categoryEntity);
         }
 
         productsRepository.save(product);
         log.info("patched product with id={}", id);
+    }
+
+    private Product findProductByIdActive(long id) {
+        final var product = productsRepository
+            .findByIdAndActiveTrue(id)
+            .orElseThrow(() -> NotFoundException.product(id));
+        return product;
     }
 }
