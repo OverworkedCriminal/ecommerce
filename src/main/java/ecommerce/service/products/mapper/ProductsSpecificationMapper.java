@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
-import ecommerce.dto.products.InProductsFilters;
+import ecommerce.dto.products.InProductFilters;
 import ecommerce.repository.categories.CategoriesRepository;
 import ecommerce.repository.categories.entity.Category;
 import ecommerce.repository.products.entity.Product;
@@ -24,7 +24,7 @@ public class ProductsSpecificationMapper {
 
     private final CategoriesRepository categoriesRepository;
 
-    public Specification<Product> mapToSpecification(InProductsFilters filters) {
+    public Specification<Product> mapToSpecification(InProductFilters filters) {
         return (root, query, cb) -> {
             final var predicates = new ArrayList<Predicate>();
 
