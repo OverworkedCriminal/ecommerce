@@ -35,8 +35,6 @@ import ecommerce.service.orders.mapper.OrdersSpecificationMapper;
 import ecommerce.service.utils.AuthUtils;
 import ecommerce.service.utils.CollectionUtils;
 import ecommerce.service.utils.mapper.PaginationMapper;
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -81,14 +79,18 @@ public class OrdersService {
         log.trace("{}", filters);
         log.trace("{}", pagination);
 
+        final var isUserPrivileged = AuthUtils.userHasAnyRole(
+            user,
+            AuthRoles.ORDER_SEARCH,
+            AuthRoles.ORDER_UPDATE
+        );
+        if (!isUserPrivileged) {
+            // underpriviliged user can view only his own orders
+            filters.setUsername(user.getName());
+        }
+
         final var pageRequest = PaginationMapper.intoPageRequest(pagination);
-        final var specification = ordersSpecificationMapper
-            .mapToSpecification(filters)
-            .and((root, query, cb) -> {
-                final Path<String> path = root.get("username");
-                final Predicate predicate = cb.equal(path, user.getName());
-                return predicate;
-            });
+        final var specification = ordersSpecificationMapper.mapToSpecification(filters);
 
         final var entityPage = ordersRepository.findAll(specification, pageRequest);
         log.info("found orders count={}", entityPage.getNumberOfElements());

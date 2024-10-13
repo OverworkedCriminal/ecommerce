@@ -118,6 +118,13 @@ public class OrdersControllerTests {
         );
     }
 
+    @Test
+    public void getOrders_usernameBlank() throws Exception {
+        test_getOrders_validation(
+            "/api/v1/orders?pageIdx=0&pageSize=10&username= "
+        );
+    }
+
     //#endregion
 
     //#region getOrder
