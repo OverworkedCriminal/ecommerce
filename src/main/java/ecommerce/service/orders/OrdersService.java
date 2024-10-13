@@ -32,6 +32,7 @@ import ecommerce.service.countries.CountriesService;
 import ecommerce.service.orders.mapper.OrderProductsMapper;
 import ecommerce.service.orders.mapper.OrdersMapper;
 import ecommerce.service.orders.mapper.OrdersSpecificationMapper;
+import ecommerce.service.utils.AuthUtils;
 import ecommerce.service.utils.CollectionUtils;
 import ecommerce.service.utils.mapper.PaginationMapper;
 import jakarta.persistence.criteria.Path;
@@ -54,14 +55,25 @@ public class OrdersService {
     public OutOrder getOrder(Authentication user, long id) throws NotFoundException {
         log.trace("id={}", id);
 
-        final var orderEntity = ordersRepository
-            .findByIdAndUsername(id, user.getName())
-            .orElseThrow(() -> NotFoundException.order(id, user.getName()));
-
+        final var isUserPrivileged = AuthUtils.userHasAnyRole(
+            user,
+            AuthRoles.ORDER_SEARCH,
+            AuthRoles.ORDER_UPDATE
+        );
+        final Order orderEntity;
+        if (isUserPrivileged) {
+            // Priviliged user can view other users' orders
+            orderEntity = ordersRepository
+                .findById(id)
+                .orElseThrow(() -> NotFoundException.order(id));
+        } else {
+            orderEntity = ordersRepository
+                .findByIdAndUsername(id, user.getName())
+                .orElseThrow(() -> NotFoundException.order(id, user.getName()));
+        }
         log.info("found order with id={}", id);
 
         final var outOrder = OrdersMapper.fromEntity(orderEntity);
-
         return outOrder;
     }
 
@@ -160,9 +172,7 @@ public class OrdersService {
         log.trace("id={}", id);
         log.trace("{}", address);
 
-        final var isUserPrivileged = user.getAuthorities()
-            .stream()
-            .anyMatch(authority -> authority.getAuthority().equals(AuthRoles.ORDER_UPDATE));
+        final var isUserPrivileged = AuthUtils.userHasAnyRole(user, AuthRoles.ORDER_UPDATE);
         final Order orderEntity;
         if (isUserPrivileged) {
             // Privileged users can update other users' orders 
