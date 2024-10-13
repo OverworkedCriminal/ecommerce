@@ -120,7 +120,7 @@ public class OrdersController {
 
     @PutMapping("/{id}/completed-at")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Secured({ AuthRoles.ORDER_UPDATE_COMPLETED_AT })
+    @Secured({ AuthRoles.ORDER_UPDATE_COMPLETED_AT, AuthRoles.ORDER_UPDATE })
     @Operation(
         summary = "marks order as completed by updating completedAt",
         security = @SecurityRequirement(name = BEARER),
@@ -128,7 +128,7 @@ public class OrdersController {
             @ApiResponse(responseCode = "204", description = "success"),
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
-            @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.ORDER_UPDATE_COMPLETED_AT + "]"),
+            @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.ORDER_UPDATE_COMPLETED_AT + "," + AuthRoles.ORDER_UPDATE + "]"),
             @ApiResponse(responseCode = "409", description = "order have already been completed")
         }
     )

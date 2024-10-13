@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.dto.addresses.InAddress;
 import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.InOrderCompletedAtUpdate;
@@ -23,6 +24,7 @@ import ecommerce.exception.ValidationException;
 import ecommerce.repository.addresses.AddressesRepository;
 import ecommerce.repository.orders.OrderProductsRepository;
 import ecommerce.repository.orders.OrdersRepository;
+import ecommerce.repository.orders.entity.Order;
 import ecommerce.repository.products.ProductsRepository;
 import ecommerce.repository.products.entity.Product;
 import ecommerce.service.addresses.mapper.AddressesMapper;
@@ -158,9 +160,20 @@ public class OrdersService {
         log.trace("id={}", id);
         log.trace("{}", address);
 
-        final var orderEntity = ordersRepository
-            .findByIdAndUsername(id, user.getName())
-            .orElseThrow(() -> NotFoundException.order(id, user.getName()));
+        final var isUserPrivileged = user.getAuthorities()
+            .stream()
+            .anyMatch(authority -> authority.getAuthority().equals(AuthRoles.ORDER_UPDATE));
+        final Order orderEntity;
+        if (isUserPrivileged) {
+            // Privileged users can update other users' orders 
+            orderEntity = ordersRepository
+                .findById(id)
+                .orElseThrow(() -> NotFoundException.order(id));
+        } else {
+            orderEntity = ordersRepository
+                .findByIdAndUsername(id, user.getName())
+                .orElseThrow(() -> NotFoundException.order(id, user.getName()));
+        }
         log.info("found order with id={}", id);
 
         if (orderEntity.getCompletedAt() != null) {
