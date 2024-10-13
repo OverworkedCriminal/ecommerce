@@ -46,6 +46,56 @@ public class OrdersControllerTests {
     @MockBean
     private OrdersService ordersService;
 
+    //#region getOrder
+    
+    private void test_getOrder_authorization(
+        HttpStatus expectedStatus,
+        @Nullable RequestPostProcessor postProcessor
+    ) throws Exception {
+        var requestBuilder = MockMvcRequestBuilders.get("/api/v1/orders/1");
+        if (postProcessor != null) {
+            requestBuilder = requestBuilder.with(postProcessor);
+        }
+
+        mvc
+            .perform(requestBuilder)
+            .andExpect(ControllerTestUtils.expectStatus(expectedStatus));
+    }
+
+    @Test
+    public void getOrder_statusCode200() throws Exception {
+        test_getOrder_authorization(
+            HttpStatus.OK, 
+            SecurityMockMvcRequestPostProcessors.jwt()
+        );
+    }
+
+    @Test
+    public void getOrder_unauthorized() throws Exception {
+        test_getOrder_authorization(
+            HttpStatus.UNAUTHORIZED, 
+            null
+        );
+    }
+
+    @Test
+    public void getOrder_notFoundException() throws Exception {
+        Mockito
+            .doThrow(NotFoundException.class)
+            .when(ordersService)
+            .getOrder(Mockito.any(), Mockito.anyLong());
+
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .get("/api/v1/orders/1")
+                    .with(SecurityMockMvcRequestPostProcessors.jwt())
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));
+    }
+
+    //#endregion
+
     //#region postOrder
 
     private void test_postOrder_authorization(

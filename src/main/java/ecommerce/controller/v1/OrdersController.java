@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -40,6 +41,21 @@ import lombok.RequiredArgsConstructor;
 public class OrdersController {
 
     private final OrdersService ordersService;
+
+    @GetMapping("/{id}")
+    @Operation(
+        summary = "fetch order by id",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "success"),
+            @ApiResponse(responseCode = "404", description = "order does not exist or does not belong to the user")
+        }
+    )
+    public OutOrder getOrder(
+        @NotNull @PathVariable Long id
+    ) throws NotFoundException {
+        final var auth = SecurityContextHolder.getContext().getAuthentication();
+        return ordersService.getOrder(auth, id);
+    }
 
     @PostMapping("")
     @Operation(

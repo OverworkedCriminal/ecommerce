@@ -41,6 +41,18 @@ public class OrdersService {
     private final ProductsRepository productsRepository;
     private final AddressesRepository addressesRepository;
 
+    public OutOrder getOrder(Authentication user, long id) throws NotFoundException {
+        final var orderEntity = ordersRepository
+            .findByIdAndUsername(id, user.getName())
+            .orElseThrow(() -> NotFoundException.order(id, user.getName()));
+
+        log.info("found order with id={}", id);
+
+        final var outOrder = OrdersMapper.fromEntity(orderEntity);
+
+        return outOrder;
+    }
+
     @Transactional
     public OutOrder postOrder(
         Authentication user,
@@ -118,12 +130,7 @@ public class OrdersService {
 
         final var orderEntity = ordersRepository
             .findByIdAndUsername(id, user.getName())
-            .orElseThrow(() -> {
-                return new NotFoundException(
-                    "order with id=%d does not exist or does not belong to user=%s"
-                        .formatted(id, user.getName())
-                );
-            });
+            .orElseThrow(() -> NotFoundException.order(id, user.getName()));
         log.info("found order with id={}", id);
 
         if (orderEntity.getCompletedAt() != null) {
