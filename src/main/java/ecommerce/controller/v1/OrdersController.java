@@ -7,6 +7,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,7 +20,10 @@ import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.dto.addresses.InAddress;
 import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.InOrderCompletedAtUpdate;
+import ecommerce.dto.orders.InOrderFilters;
 import ecommerce.dto.orders.OutOrder;
+import ecommerce.dto.shared.InPagination;
+import ecommerce.dto.shared.OutPage;
 import ecommerce.exception.ConflictException;
 import ecommerce.exception.NotFoundException;
 import ecommerce.exception.ValidationException;
@@ -42,9 +46,27 @@ public class OrdersController {
 
     private final OrdersService ordersService;
 
+    @GetMapping("")
+    @Operation(
+        summary = "fetch orders",
+        security = @SecurityRequirement(name = BEARER),
+        responses = {
+            @ApiResponse(responseCode = "200", description = "success"),
+            @ApiResponse(responseCode = "400", description = "any of input parameters is invalid")
+        }
+    )
+    public OutPage<OutOrder> getOrders(
+        @Validated @ModelAttribute InPagination pagination,
+        @Validated @ModelAttribute InOrderFilters filters
+    ) {
+        final var auth = SecurityContextHolder.getContext().getAuthentication();
+        return ordersService.getOrders(auth, filters, pagination);
+    }
+
     @GetMapping("/{id}")
     @Operation(
         summary = "fetch order by id",
+        security = @SecurityRequirement(name = BEARER),
         responses = {
             @ApiResponse(responseCode = "200", description = "success"),
             @ApiResponse(responseCode = "404", description = "order does not exist or does not belong to the user")
