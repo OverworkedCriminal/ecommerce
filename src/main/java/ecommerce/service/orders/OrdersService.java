@@ -112,7 +112,7 @@ public class OrdersService {
         Authentication user,
         Long id,
         InAddress address
-    ) throws NotFoundException {
+    ) throws NotFoundException, ConflictException {
         log.trace("id={}", id);
         log.trace("{}", address);
 
@@ -124,6 +124,11 @@ public class OrdersService {
                         .formatted(id, user.getName())
                 );
             });
+        log.info("found order with id={}", id);
+
+        if (orderEntity.getCompletedAt() != null) {
+            throw ConflictException.orderAlreadyCompleted(id);
+        }
 
         final var countryEntity = countriesService.findByIdActive(address.country());
         final var addressEntity = AddressesMapper.intoEntity(address, countryEntity);

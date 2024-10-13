@@ -68,13 +68,14 @@ public class OrdersController {
             @ApiResponse(responseCode = "204", description = "success"),
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
-            @ApiResponse(responseCode = "404", description = "any of the products or country does not exist")
+            @ApiResponse(responseCode = "404", description = "any of the products or country does not exist"),
+            @ApiResponse(responseCode = "409", description = "order have already been completed")
         }
     )
     public void putOrderAddress(
         @NotNull @PathVariable Long id,
         @Validated @RequestBody InAddress address
-    ) throws NotFoundException {
+    ) throws NotFoundException, ConflictException {
         final var auth = SecurityContextHolder.getContext().getAuthentication();
         ordersService.putOrderAddress(auth, id, address);
     }
