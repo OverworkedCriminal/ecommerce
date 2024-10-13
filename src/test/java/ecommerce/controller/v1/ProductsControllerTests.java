@@ -76,6 +76,24 @@ public class ProductsControllerTests {
     }
 
     @Test
+    public void getProducts_pageSizeNull() throws Exception {
+        final int pageIdx = 2;
+        final String url = "/api/v1/products?pageIdx=%d"
+            .formatted(pageIdx);
+
+        test_getProducts_validationException(url);
+    }
+
+    @Test
+    public void getProducts_pageIdxNull() throws Exception {
+        final int pageSize = 2;
+        final String url = "/api/v1/products?pageSize=%d"
+            .formatted(pageSize);
+
+        test_getProducts_validationException(url);
+    }
+
+    @Test
     public void getProducts_pageSizeLessThan1() throws Exception {
         final int pageSize = 0;
         final int pageIdx = 2;

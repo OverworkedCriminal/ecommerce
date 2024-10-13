@@ -1,6 +1,5 @@
 package ecommerce.service.products;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import ecommerce.dto.products.InProduct;
@@ -16,6 +15,7 @@ import ecommerce.repository.products.entity.Product;
 import ecommerce.service.categories.CategoriesService;
 import ecommerce.service.products.mapper.ProductsMapper;
 import ecommerce.service.products.mapper.ProductsSpecificationMapper;
+import ecommerce.service.utils.mapper.PaginationMapper;
 import jakarta.persistence.criteria.Path;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,10 +36,7 @@ public class ProductsService {
         log.trace("{}", filters);
         log.trace("{}", pagination);
 
-        final var pageRequest = PageRequest.of(
-            pagination.pageIdx(),
-            pagination.pageSize()
-        );
+        final var pageRequest = PaginationMapper.intoPageRequest(pagination);
         final var specification = productsSpecificationMapper
             .mapToSpecification(filters)
             .and((root, query, cb) -> {
@@ -47,14 +44,11 @@ public class ProductsService {
                 return cb.equal(path, true);
             });
 
-        final var products = productsRepository
-            .findAll(specification, pageRequest)
-            .map(ProductsMapper::fromEntity);
-        log.info("found products count={}", products.getNumberOfElements());
+        final var entityPage = productsRepository.findAll(specification, pageRequest);
+        log.info("found products count={}", entityPage.getNumberOfElements());
 
-        final var productsPage = OutPage.from(products);
-
-        return productsPage;
+        final var outPage = PaginationMapper.fromPage(entityPage, ProductsMapper::fromEntity);
+        return outPage;
     }
 
     public OutProductDetails postProduct(InProduct product) throws NotFoundException {

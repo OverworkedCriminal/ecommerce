@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +31,7 @@ import ecommerce.service.orders.mapper.OrderProductsMapper;
 import ecommerce.service.orders.mapper.OrdersMapper;
 import ecommerce.service.orders.mapper.OrdersSpecificationMapper;
 import ecommerce.service.utils.CollectionUtils;
+import ecommerce.service.utils.mapper.PaginationMapper;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -67,10 +67,7 @@ public class OrdersService {
         log.trace("{}", filters);
         log.trace("{}", pagination);
 
-        final var pageRequest = PageRequest.of(
-            pagination.pageIdx(), 
-            pagination.pageSize()
-        );
+        final var pageRequest = PaginationMapper.intoPageRequest(pagination);
         final var specification = ordersSpecificationMapper
             .mapToSpecification(filters)
             .and((root, query, cb) -> {
@@ -79,13 +76,11 @@ public class OrdersService {
                 return predicate;
             });
 
-        final var orders = ordersRepository
-            .findAll(specification, pageRequest)
-            .map(OrdersMapper::fromEntity);
-        log.info("found orders count={}", orders.getNumberOfElements());
+        final var entityPage = ordersRepository.findAll(specification, pageRequest);
+        log.info("found orders count={}", entityPage.getNumberOfElements());
 
-        final var ordersPage = OutPage.from(orders);
-        return ordersPage;
+        final var outPage = PaginationMapper.fromPage(entityPage, OrdersMapper::fromEntity);
+        return outPage;
     }
 
     @Transactional

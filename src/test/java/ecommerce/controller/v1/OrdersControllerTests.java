@@ -91,6 +91,20 @@ public class OrdersControllerTests {
     }
 
     @Test
+    public void getProducts_pageSizeNull() throws Exception {
+        test_getOrders_validation(
+            "/api/v1/orders?pageIdx=2"
+        );
+    }
+
+    @Test
+    public void getProducts_pageIdxNull() throws Exception {
+        test_getOrders_validation(
+            "/api/v1/orders?pageSize=10"
+        );
+    }
+
+    @Test
     public void getOrders_pageIdxBelowZero() throws Exception {
         test_getOrders_validation(
             "/api/v1/orders?pageIdx=-1&pageSize=10"
