@@ -5,14 +5,12 @@ import java.util.function.Function;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Component;
 
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-@Component
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PaginationMapper {
 
