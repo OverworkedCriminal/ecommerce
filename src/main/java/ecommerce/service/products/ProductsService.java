@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 import ecommerce.dto.products.InProduct;
 import ecommerce.dto.products.InProductPatch;
-import ecommerce.dto.products.InProductsFilters;
+import ecommerce.dto.products.InProductFilters;
 import ecommerce.dto.products.OutProduct;
 import ecommerce.dto.products.OutProductDetails;
 import ecommerce.dto.shared.InPagination;
@@ -30,7 +30,7 @@ public class ProductsService {
     private final ProductsSpecificationMapper productsSpecificationMapper;
 
     public OutPage<OutProduct> getProducts(
-        InProductsFilters filters,
+        InProductFilters filters,
         InPagination pagination
     ) {
         log.trace("{}", filters);

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,8 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 import ecommerce.dto.addresses.InAddress;
 import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.InOrderCompletedAtUpdate;
+import ecommerce.dto.orders.InOrderFilters;
 import ecommerce.dto.orders.InOrderProduct;
 import ecommerce.dto.orders.OutOrder;
+import ecommerce.dto.shared.InPagination;
+import ecommerce.dto.shared.OutPage;
 import ecommerce.exception.ConflictException;
 import ecommerce.exception.NotFoundException;
 import ecommerce.exception.ValidationException;
@@ -26,7 +30,10 @@ import ecommerce.service.addresses.mapper.AddressesMapper;
 import ecommerce.service.countries.CountriesService;
 import ecommerce.service.orders.mapper.OrderProductsMapper;
 import ecommerce.service.orders.mapper.OrdersMapper;
+import ecommerce.service.orders.mapper.OrdersSpecificationMapper;
 import ecommerce.service.utils.CollectionUtils;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,10 +43,50 @@ import lombok.extern.slf4j.Slf4j;
 public class OrdersService {
 
     private final CountriesService countriesService;
+    private final OrdersSpecificationMapper ordersSpecificationMapper;
     private final OrdersRepository ordersRepository;
     private final OrderProductsRepository orderProductsRepository;
     private final ProductsRepository productsRepository;
     private final AddressesRepository addressesRepository;
+
+    public OutOrder getOrder(Authentication user, long id) throws NotFoundException {
+        log.trace("id={}", id);
+
+        final var orderEntity = ordersRepository
+            .findByIdAndUsername(id, user.getName())
+            .orElseThrow(() -> NotFoundException.order(id, user.getName()));
+
+        log.info("found order with id={}", id);
+
+        final var outOrder = OrdersMapper.fromEntity(orderEntity);
+
+        return outOrder;
+    }
+
+    public OutPage<OutOrder> getOrders(Authentication user, InOrderFilters filters, InPagination pagination) {
+        log.trace("{}", filters);
+        log.trace("{}", pagination);
+
+        final var pageRequest = PageRequest.of(
+            pagination.pageIdx(), 
+            pagination.pageSize()
+        );
+        final var specification = ordersSpecificationMapper
+            .mapToSpecification(filters)
+            .and((root, query, cb) -> {
+                final Path<String> path = root.get("username");
+                final Predicate predicate = cb.equal(path, user.getName());
+                return predicate;
+            });
+
+        final var orders = ordersRepository
+            .findAll(specification, pageRequest)
+            .map(OrdersMapper::fromEntity);
+        log.info("found orders count={}", orders.getNumberOfElements());
+
+        final var ordersPage = OutPage.from(orders);
+        return ordersPage;
+    }
 
     @Transactional
     public OutOrder postOrder(
@@ -112,18 +159,18 @@ public class OrdersService {
         Authentication user,
         Long id,
         InAddress address
-    ) throws NotFoundException {
+    ) throws NotFoundException, ConflictException {
         log.trace("id={}", id);
         log.trace("{}", address);
 
         final var orderEntity = ordersRepository
             .findByIdAndUsername(id, user.getName())
-            .orElseThrow(() -> {
-                return new NotFoundException(
-                    "order with id=%d does not exist or does not belong to user=%s"
-                        .formatted(id, user.getName())
-                );
-            });
+            .orElseThrow(() -> NotFoundException.order(id, user.getName()));
+        log.info("found order with id={}", id);
+
+        if (orderEntity.getCompletedAt() != null) {
+            throw ConflictException.orderAlreadyCompleted(id);
+        }
 
         final var countryEntity = countriesService.findByIdActive(address.country());
         final var addressEntity = AddressesMapper.intoEntity(address, countryEntity);

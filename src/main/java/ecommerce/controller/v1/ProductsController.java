@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.dto.products.InProduct;
 import ecommerce.dto.products.InProductPatch;
-import ecommerce.dto.products.InProductsFilters;
+import ecommerce.dto.products.InProductFilters;
 import ecommerce.dto.products.OutProduct;
 import ecommerce.dto.products.OutProductDetails;
 import ecommerce.dto.shared.InPagination;
@@ -54,7 +54,7 @@ public class ProductsController {
     )
     public OutPage<OutProduct> getProducts(
         @Validated @ModelAttribute InPagination pagination,
-        @Validated @ModelAttribute InProductsFilters filters
+        @Validated @ModelAttribute InProductFilters filters
     ) {
         return productsService.getProducts(filters, pagination);
     }

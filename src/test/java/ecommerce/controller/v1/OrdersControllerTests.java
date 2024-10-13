@@ -46,6 +46,116 @@ public class OrdersControllerTests {
     @MockBean
     private OrdersService ordersService;
 
+    //#region getOrders
+
+    private void test_getOrders_authorization(
+        HttpStatus expectedStatus,
+        @Nullable RequestPostProcessor postProcessor
+    ) throws Exception {
+        var requestBuilder = MockMvcRequestBuilders.get("/api/v1/orders?pageIdx=0&pageSize=10");
+        if (postProcessor != null) {
+            requestBuilder = requestBuilder.with(postProcessor);
+        }
+
+        mvc
+            .perform(requestBuilder)
+            .andExpect(ControllerTestUtils.expectStatus(expectedStatus));
+    }
+
+    @Test
+    public void getOrders_statusCode200() throws Exception {
+        test_getOrders_authorization(
+            HttpStatus.OK, 
+            SecurityMockMvcRequestPostProcessors.jwt()
+        );
+    }
+
+    @Test
+    public void getOrders_unauthorized() throws Exception {
+        test_getOrders_authorization(
+            HttpStatus.UNAUTHORIZED,
+            null
+        );
+    }
+
+    private void test_getOrders_validation(String uri) throws Exception {
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .get(uri)
+                    .with(
+                        SecurityMockMvcRequestPostProcessors.jwt()
+                    )
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.BAD_REQUEST));
+    }
+
+    @Test
+    public void getOrders_pageIdxBelowZero() throws Exception {
+        test_getOrders_validation(
+            "/api/v1/orders?pageIdx=-1&pageSize=10"
+        );
+    }
+
+    @Test
+    public void getOrders_pageSizeZero() throws Exception {
+        test_getOrders_validation(
+            "/api/v1/orders?pageIdx=0&pageSize=0"
+        );
+    }
+
+    //#endregion
+
+    //#region getOrder
+    
+    private void test_getOrder_authorization(
+        HttpStatus expectedStatus,
+        @Nullable RequestPostProcessor postProcessor
+    ) throws Exception {
+        var requestBuilder = MockMvcRequestBuilders.get("/api/v1/orders/1");
+        if (postProcessor != null) {
+            requestBuilder = requestBuilder.with(postProcessor);
+        }
+
+        mvc
+            .perform(requestBuilder)
+            .andExpect(ControllerTestUtils.expectStatus(expectedStatus));
+    }
+
+    @Test
+    public void getOrder_statusCode200() throws Exception {
+        test_getOrder_authorization(
+            HttpStatus.OK, 
+            SecurityMockMvcRequestPostProcessors.jwt()
+        );
+    }
+
+    @Test
+    public void getOrder_unauthorized() throws Exception {
+        test_getOrder_authorization(
+            HttpStatus.UNAUTHORIZED, 
+            null
+        );
+    }
+
+    @Test
+    public void getOrder_notFoundException() throws Exception {
+        Mockito
+            .doThrow(NotFoundException.class)
+            .when(ordersService)
+            .getOrder(Mockito.any(), Mockito.anyLong());
+
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .get("/api/v1/orders/1")
+                    .with(SecurityMockMvcRequestPostProcessors.jwt())
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));
+    }
+
+    //#endregion
+
     //#region postOrder
 
     private void test_postOrder_authorization(

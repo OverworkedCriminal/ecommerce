@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,7 +20,10 @@ import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.dto.addresses.InAddress;
 import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.InOrderCompletedAtUpdate;
+import ecommerce.dto.orders.InOrderFilters;
 import ecommerce.dto.orders.OutOrder;
+import ecommerce.dto.shared.InPagination;
+import ecommerce.dto.shared.OutPage;
 import ecommerce.exception.ConflictException;
 import ecommerce.exception.NotFoundException;
 import ecommerce.exception.ValidationException;
@@ -40,6 +45,39 @@ import lombok.RequiredArgsConstructor;
 public class OrdersController {
 
     private final OrdersService ordersService;
+
+    @GetMapping("")
+    @Operation(
+        summary = "fetch orders",
+        security = @SecurityRequirement(name = BEARER),
+        responses = {
+            @ApiResponse(responseCode = "200", description = "success"),
+            @ApiResponse(responseCode = "400", description = "any of input parameters is invalid")
+        }
+    )
+    public OutPage<OutOrder> getOrders(
+        @Validated @ModelAttribute InPagination pagination,
+        @Validated @ModelAttribute InOrderFilters filters
+    ) {
+        final var auth = SecurityContextHolder.getContext().getAuthentication();
+        return ordersService.getOrders(auth, filters, pagination);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(
+        summary = "fetch order by id",
+        security = @SecurityRequirement(name = BEARER),
+        responses = {
+            @ApiResponse(responseCode = "200", description = "success"),
+            @ApiResponse(responseCode = "404", description = "order does not exist or does not belong to the user")
+        }
+    )
+    public OutOrder getOrder(
+        @NotNull @PathVariable Long id
+    ) throws NotFoundException {
+        final var auth = SecurityContextHolder.getContext().getAuthentication();
+        return ordersService.getOrder(auth, id);
+    }
 
     @PostMapping("")
     @Operation(
@@ -68,13 +106,14 @@ public class OrdersController {
             @ApiResponse(responseCode = "204", description = "success"),
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
-            @ApiResponse(responseCode = "404", description = "any of the products or country does not exist")
+            @ApiResponse(responseCode = "404", description = "any of the products or country does not exist"),
+            @ApiResponse(responseCode = "409", description = "order have already been completed")
         }
     )
     public void putOrderAddress(
         @NotNull @PathVariable Long id,
         @Validated @RequestBody InAddress address
-    ) throws NotFoundException {
+    ) throws NotFoundException, ConflictException {
         final var auth = SecurityContextHolder.getContext().getAuthentication();
         ordersService.putOrderAddress(auth, id, address);
     }
