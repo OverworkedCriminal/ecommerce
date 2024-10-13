@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.dto.addresses.InAddress;
 import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.InOrderCompletedAtUpdate;
@@ -23,6 +24,7 @@ import ecommerce.exception.ValidationException;
 import ecommerce.repository.addresses.AddressesRepository;
 import ecommerce.repository.orders.OrderProductsRepository;
 import ecommerce.repository.orders.OrdersRepository;
+import ecommerce.repository.orders.entity.Order;
 import ecommerce.repository.products.ProductsRepository;
 import ecommerce.repository.products.entity.Product;
 import ecommerce.service.addresses.mapper.AddressesMapper;
@@ -30,10 +32,9 @@ import ecommerce.service.countries.CountriesService;
 import ecommerce.service.orders.mapper.OrderProductsMapper;
 import ecommerce.service.orders.mapper.OrdersMapper;
 import ecommerce.service.orders.mapper.OrdersSpecificationMapper;
+import ecommerce.service.utils.AuthUtils;
 import ecommerce.service.utils.CollectionUtils;
 import ecommerce.service.utils.mapper.PaginationMapper;
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,14 +53,25 @@ public class OrdersService {
     public OutOrder getOrder(Authentication user, long id) throws NotFoundException {
         log.trace("id={}", id);
 
-        final var orderEntity = ordersRepository
-            .findByIdAndUsername(id, user.getName())
-            .orElseThrow(() -> NotFoundException.order(id, user.getName()));
-
+        final var isUserPrivileged = AuthUtils.userHasAnyRole(
+            user,
+            AuthRoles.ORDER_SEARCH,
+            AuthRoles.ORDER_UPDATE
+        );
+        final Order orderEntity;
+        if (isUserPrivileged) {
+            // Priviliged user can view other users' orders
+            orderEntity = ordersRepository
+                .findById(id)
+                .orElseThrow(() -> NotFoundException.order(id));
+        } else {
+            orderEntity = ordersRepository
+                .findByIdAndUsername(id, user.getName())
+                .orElseThrow(() -> NotFoundException.order(id, user.getName()));
+        }
         log.info("found order with id={}", id);
 
         final var outOrder = OrdersMapper.fromEntity(orderEntity);
-
         return outOrder;
     }
 
@@ -67,14 +79,18 @@ public class OrdersService {
         log.trace("{}", filters);
         log.trace("{}", pagination);
 
+        final var isUserPrivileged = AuthUtils.userHasAnyRole(
+            user,
+            AuthRoles.ORDER_SEARCH,
+            AuthRoles.ORDER_UPDATE
+        );
+        if (!isUserPrivileged) {
+            // underpriviliged user can view only his own orders
+            filters.setUsername(user.getName());
+        }
+
         final var pageRequest = PaginationMapper.intoPageRequest(pagination);
-        final var specification = ordersSpecificationMapper
-            .mapToSpecification(filters)
-            .and((root, query, cb) -> {
-                final Path<String> path = root.get("username");
-                final Predicate predicate = cb.equal(path, user.getName());
-                return predicate;
-            });
+        final var specification = ordersSpecificationMapper.mapToSpecification(filters);
 
         final var entityPage = ordersRepository.findAll(specification, pageRequest);
         log.info("found orders count={}", entityPage.getNumberOfElements());
@@ -158,9 +174,18 @@ public class OrdersService {
         log.trace("id={}", id);
         log.trace("{}", address);
 
-        final var orderEntity = ordersRepository
-            .findByIdAndUsername(id, user.getName())
-            .orElseThrow(() -> NotFoundException.order(id, user.getName()));
+        final var isUserPrivileged = AuthUtils.userHasAnyRole(user, AuthRoles.ORDER_UPDATE);
+        final Order orderEntity;
+        if (isUserPrivileged) {
+            // Privileged users can update other users' orders 
+            orderEntity = ordersRepository
+                .findById(id)
+                .orElseThrow(() -> NotFoundException.order(id));
+        } else {
+            orderEntity = ordersRepository
+                .findByIdAndUsername(id, user.getName())
+                .orElseThrow(() -> NotFoundException.order(id, user.getName()));
+        }
         log.info("found order with id={}", id);
 
         if (orderEntity.getCompletedAt() != null) {

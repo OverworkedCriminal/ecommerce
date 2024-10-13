@@ -17,7 +17,7 @@ public class OrdersSpecificationMapper {
         return (root, query, cb) -> {
             final var predicates = new ArrayList<Predicate>();
 
-            final var completed = filters.completed();
+            final var completed = filters.getCompleted();
             if (completed != null) {
                 final Path<Boolean> path = root.get("completedAt");
                 final Predicate predicate;
@@ -26,6 +26,13 @@ public class OrdersSpecificationMapper {
                 } else {
                     predicate = cb.isNull(path);
                 }
+                predicates.add(predicate);
+            }
+
+            final var username = filters.getUsername();
+            if (username != null) {
+                final Path<String> path = root.get("username");
+                final Predicate predicate = cb.equal(path, username);
                 predicates.add(predicate);
             }
 
