@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class CategoriesService {
 
+    private final CategoriesMapper categoriesMapper;
     private final CategoriesRepository categoriesRepository;
 
     /**
@@ -44,7 +45,7 @@ public class CategoriesService {
         log.info("found categories count={}", categoryEntities.size());
 
         final var outCategories = categoryEntities.stream()
-            .map(CategoriesMapper::fromEntity)
+            .map(categoriesMapper::fromEntity)
             .collect(Collectors.toList());
 
         return outCategories;
@@ -60,7 +61,7 @@ public class CategoriesService {
             parentCategoryEntity = findCategoryById(categoryIn.parentCategory());
         }
 
-        var categoryEntity = CategoriesMapper.intoEntity(categoryIn, parentCategoryEntity);
+        var categoryEntity = categoriesMapper.intoEntity(categoryIn, parentCategoryEntity);
 
         try {
             categoryEntity = categoriesRepository.save(categoryEntity);
@@ -70,7 +71,7 @@ public class CategoriesService {
             throw new ConflictException("category with such name already exist" + e.getMessage());
         }
 
-        final var categoryOut = CategoriesMapper.fromEntity(categoryEntity);
+        final var categoryOut = categoriesMapper.fromEntity(categoryEntity);
 
         return categoryOut;
     }

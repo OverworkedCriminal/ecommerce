@@ -1,22 +1,24 @@
 package ecommerce.service.countries.mapper;
 
+import org.springframework.stereotype.Component;
+
 import ecommerce.dto.countries.InCountry;
 import ecommerce.dto.countries.OutCountry;
 import ecommerce.repository.countries.entity.Country;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Component
+@RequiredArgsConstructor
 public class CountriesMapper {
 
-    public static Country intoEntity(InCountry country) {
+    public Country intoEntity(InCountry country) {
         return Country.builder()
             .active(true)
             .name(country.name())
             .build();
     }
 
-    public static OutCountry fromEntity(Country country) {
+    public OutCountry fromEntity(Country country) {
         return OutCountry.builder()
             .id(country.getId())
             .name(country.getName())

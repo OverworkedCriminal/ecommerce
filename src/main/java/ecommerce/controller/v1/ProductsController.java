@@ -23,6 +23,7 @@ import ecommerce.dto.products.OutProductDetails;
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
 import ecommerce.exception.NotFoundException;
+import ecommerce.exception.ValidationException;
 import ecommerce.service.products.ProductsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -74,7 +75,7 @@ public class ProductsController {
     )
     public OutProductDetails postProduct(
         @Validated @RequestBody InProduct product
-    ) throws NotFoundException {
+    ) throws NotFoundException, ValidationException {
         return productsService.postProduct(product);
     }
 
@@ -130,7 +131,7 @@ public class ProductsController {
     public void patchProduct(
         @NotNull @PathVariable Long id,
         @Validated @RequestBody InProductPatch productPatch
-    ) throws NotFoundException {
+    ) throws NotFoundException, ValidationException {
         productsService.patchProduct(id, productPatch);
     }
 }

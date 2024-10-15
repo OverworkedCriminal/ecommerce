@@ -4,18 +4,23 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Component;
+
 import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.OutOrder;
 import ecommerce.repository.addresses.entity.Address;
 import ecommerce.repository.orders.entity.Order;
 import ecommerce.service.addresses.mapper.AddressesMapper;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Component
+@RequiredArgsConstructor
 public class OrdersMapper {
 
-    public static Order intoEntity(
+    private final OrderProductsMapper orderProductsMapper;
+    private final AddressesMapper addressesMapper;
+
+    public Order intoEntity(
         InOrder order,
         String username,
         Address address,
@@ -30,18 +35,18 @@ public class OrdersMapper {
             .build();
     }
 
-    public static OutOrder fromEntity(Order order) {
+    public OutOrder fromEntity(Order order) {
         return OutOrder.builder()
             .id(order.getId())
             .username(order.getUsername())
-            .address(AddressesMapper.fromEntity(order.getAddress()))
+            .address(addressesMapper.fromEntity(order.getAddress()))
             .orderedAt(order.getOrderedAt())
             .completedAt(order.getCompletedAt())
             .price(order.getPrice())
             .orderProducts(
                 order.getOrderProducts()
                     .stream()
-                    .map(OrderProductsMapper::fromEntity)
+                    .map(orderProductsMapper::fromEntity)
                     .collect(Collectors.toList())
             )
             .build();

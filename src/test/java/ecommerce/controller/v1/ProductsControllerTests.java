@@ -26,6 +26,7 @@ import ecommerce.dto.products.InProduct;
 import ecommerce.dto.products.InProductPatch;
 import ecommerce.dto.products.OutProductDetails;
 import ecommerce.exception.NotFoundException;
+import ecommerce.exception.ValidationException;
 import ecommerce.service.products.ProductsService;
 
 @WebMvcTest(ProductsController.class)
@@ -285,6 +286,35 @@ public class ProductsControllerTests {
         test_postProduct_validationException(product);
     }
 
+    @Test
+    public void postProduct_validationException() throws Exception {
+        Mockito
+            .doThrow(ValidationException.class)
+            .when(productsService)
+            .postProduct(Mockito.any());
+
+        final var product = new InProduct(
+            "name",
+            "description",
+            new BigDecimal(4.99),
+            1L
+        );
+
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .post("/api/v1/products")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(product))
+                    .with(
+                        SecurityMockMvcRequestPostProcessors
+                            .jwt()
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.PRODUCT_CREATE))
+                    )
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.BAD_REQUEST));
+    }
+
     //#endregion
 
     //#region getProduct
@@ -539,6 +569,35 @@ public class ProductsControllerTests {
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.NOT_FOUND));
+    }
+
+    @Test
+    public void patchProduct_validationException() throws Exception {
+        final var product = new InProduct(
+            "name",
+            "description",
+            new BigDecimal(4.99),
+            1L
+        );
+
+        Mockito
+            .doThrow(ValidationException.class)
+            .when(productsService)
+            .patchProduct(Mockito.anyLong(), Mockito.any());
+
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .patch("/api/v1/products/1")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(product))
+                    .with(
+                        SecurityMockMvcRequestPostProcessors
+                            .jwt()
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.PRODUCT_CREATE))
+                    )
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.BAD_REQUEST));
     }
 
     //#endregion
