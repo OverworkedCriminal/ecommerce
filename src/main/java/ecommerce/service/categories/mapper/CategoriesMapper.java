@@ -1,5 +1,7 @@
 package ecommerce.service.categories.mapper;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Component;
 
 import ecommerce.dto.categories.InCategory;
@@ -22,7 +24,11 @@ public class CategoriesMapper {
         return OutCategory.builder()
             .id(category.getId())
             .name(category.getName())
-            .parentCategory(category.getParentCategory().getId())
+            .parentCategory(
+                Optional.ofNullable(category.getParentCategory())
+                    .map(Category::getId)
+                    .orElse(null)
+            )
             .build();
     }
 }
