@@ -16,6 +16,7 @@ import ecommerce.repository.products.entity.Product;
 import ecommerce.service.categories.CategoriesService;
 import ecommerce.service.products.mapper.ProductsMapper;
 import ecommerce.service.products.mapper.ProductsSpecificationMapper;
+import ecommerce.service.products.sanitizer.IProductsInputSanitizer;
 import ecommerce.service.utils.mapper.PaginationMapper;
 import jakarta.persistence.criteria.Path;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ProductsService {
 
     private final CategoriesService categoriesService;
+    private final IProductsInputSanitizer productsInputSanitizer;
     private final ProductsRepository productsRepository;
     private final ProductsMapper productsMapper;
     private final ProductsSpecificationMapper productsSpecificationMapper;
@@ -92,7 +94,10 @@ public class ProductsService {
         log.info("deleted product with id={}", id);
     }
 
-    public void patchProduct(long id, InProductPatch productPatch) throws NotFoundException {
+    public void patchProduct(
+        long id,
+        InProductPatch productPatch
+    ) throws NotFoundException, ValidationException {
         log.trace("id={}", id);
         log.trace("{}", productPatch);
 
@@ -100,10 +105,12 @@ public class ProductsService {
         log.info("found product with id={}", id);
 
         if (productPatch.name() != null) {
-            product.setName(productPatch.name());
+            final var name = productsInputSanitizer.sanitize(productPatch.name());
+            product.setName(name);
         }
         if (productPatch.description() != null) {
-            product.setDescription(productPatch.description());
+            final var description = productsInputSanitizer.sanitize(productPatch.description());
+            product.setDescription(description);
         }
         if (productPatch.price() != null) {
             product.setPrice(productPatch.price());

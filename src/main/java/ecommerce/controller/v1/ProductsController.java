@@ -131,7 +131,7 @@ public class ProductsController {
     public void patchProduct(
         @NotNull @PathVariable Long id,
         @Validated @RequestBody InProductPatch productPatch
-    ) throws NotFoundException {
+    ) throws NotFoundException, ValidationException {
         productsService.patchProduct(id, productPatch);
     }
 }
