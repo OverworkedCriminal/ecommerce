@@ -59,6 +59,9 @@ public class ProductsSpecificationMapper {
                     final Join<Product, Category> join = root.join("category", JoinType.INNER);
                     final Predicate predicate = join.get("id").in(categoryIds);
                     predicates.add(predicate);
+                } else {
+                    log.warn("category with id={} does not exist", category);
+                    predicates.add(cb.disjunction()); // makes sure no product is found
                 }
             }
 
