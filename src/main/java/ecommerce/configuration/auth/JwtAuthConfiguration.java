@@ -43,15 +43,20 @@ public class JwtAuthConfiguration {
             )
             .authorizeHttpRequests(httpAuthorize ->
                 httpAuthorize
-                    .requestMatchers(
-                        HttpMethod.GET,
-                        "/api/v1/products",
-                        "/api/v1/products/*",
-                        "/api/v1/categories",
-                        "/api/v1/countries",
-                        "/api/v1/countries/*"
-                    ).permitAll()
-                    .anyRequest().authenticated()
+                    // categories
+                    .requestMatchers(HttpMethod.POST, "/api/v1/categories").authenticated()
+                    .requestMatchers("/api/v1/categories/*").authenticated()
+                    // countries
+                    .requestMatchers(HttpMethod.POST, "/api/v1/countries").authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/v1/countries/*").authenticated()
+                    // orders
+                    .requestMatchers("/api/v1/orders/**").authenticated()
+                    // products
+                    .requestMatchers(HttpMethod.POST, "/api/v1/products").authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/v1/products/*").authenticated()
+                    .requestMatchers(HttpMethod.PATCH, "/api/v1/products/*").authenticated()
+                    // rest
+                    .anyRequest().permitAll()
             )
             .oauth2ResourceServer(oauth2 -> {
                 oauth2
