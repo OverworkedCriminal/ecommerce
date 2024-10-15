@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Component;
+
 import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.OutOrder;
 import ecommerce.repository.addresses.entity.Address;
@@ -11,6 +13,7 @@ import ecommerce.repository.orders.entity.Order;
 import ecommerce.service.addresses.mapper.AddressesMapper;
 import lombok.RequiredArgsConstructor;
 
+@Component
 @RequiredArgsConstructor
 public class OrdersMapper {
 

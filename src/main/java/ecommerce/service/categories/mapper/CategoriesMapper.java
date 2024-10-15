@@ -1,10 +1,13 @@
 package ecommerce.service.categories.mapper;
 
+import org.springframework.stereotype.Component;
+
 import ecommerce.dto.categories.InCategory;
 import ecommerce.dto.categories.OutCategory;
 import ecommerce.repository.categories.entity.Category;
 import lombok.RequiredArgsConstructor;
 
+@Component
 @RequiredArgsConstructor
 public class CategoriesMapper {
 

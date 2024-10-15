@@ -1,11 +1,14 @@
 package ecommerce.service.addresses.mapper;
 
+import org.springframework.stereotype.Component;
+
 import ecommerce.dto.addresses.InAddress;
 import ecommerce.dto.addresses.OutAddress;
 import ecommerce.repository.addresses.entity.Address;
 import ecommerce.repository.countries.entity.Country;
 import lombok.RequiredArgsConstructor;
 
+@Component
 @RequiredArgsConstructor
 public class AddressesMapper {
 

@@ -10,6 +10,7 @@ import ecommerce.dto.products.OutProductDetails;
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
 import ecommerce.exception.NotFoundException;
+import ecommerce.exception.ValidationException;
 import ecommerce.repository.products.ProductsRepository;
 import ecommerce.repository.products.entity.Product;
 import ecommerce.service.categories.CategoriesService;
@@ -53,7 +54,7 @@ public class ProductsService {
         return outPage;
     }
 
-    public OutProductDetails postProduct(InProduct product) throws NotFoundException {
+    public OutProductDetails postProduct(InProduct product) throws NotFoundException, ValidationException {
         log.trace("{}", product);
 
         final var categoryEntity = categoriesService.findCategoryById(product.category());
