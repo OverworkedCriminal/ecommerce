@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class CountriesService {
 
+    private final CountriesMapper countriesMapper;
     private final CountriesRepository countriesRepository;
 
     /**
@@ -41,7 +42,7 @@ public class CountriesService {
         final var countryEntity = findByIdActive(id);
         log.info("found country with id={}", id);
 
-        final var outCountry = CountriesMapper.fromEntity(countryEntity);
+        final var outCountry = countriesMapper.fromEntity(countryEntity);
         return outCountry;
     }
 
@@ -50,7 +51,7 @@ public class CountriesService {
         log.info("found countries count={}", countryEntities.size());
 
         final var outCountries = countryEntities.stream()
-            .map(CountriesMapper::fromEntity)
+            .map(countriesMapper::fromEntity)
             .collect(Collectors.toList());
 
         return outCountries;
@@ -59,7 +60,7 @@ public class CountriesService {
     public OutCountry postCountry(InCountry inCountry) throws ConflictException {
         log.trace("{}", inCountry);
 
-        var countryEntity = CountriesMapper.intoEntity(inCountry);
+        var countryEntity = countriesMapper.intoEntity(inCountry);
 
         try {
             countryEntity = countriesRepository.save(countryEntity);
@@ -81,7 +82,7 @@ public class CountriesService {
             log.info("updated country with id={}", countryEntity.getId());
         }
 
-        final var outCountry = CountriesMapper.fromEntity(countryEntity);
+        final var outCountry = countriesMapper.fromEntity(countryEntity);
         return outCountry;
     }
 

@@ -27,7 +27,9 @@ public class ProductsService {
 
     private final CategoriesService categoriesService;
     private final ProductsRepository productsRepository;
+    private final ProductsMapper productsMapper;
     private final ProductsSpecificationMapper productsSpecificationMapper;
+    private final PaginationMapper paginationMapper;
 
     public OutPage<OutProduct> getProducts(
         InProductFilters filters,
@@ -36,7 +38,7 @@ public class ProductsService {
         log.trace("{}", filters);
         log.trace("{}", pagination);
 
-        final var pageRequest = PaginationMapper.intoPageRequest(pagination);
+        final var pageRequest = paginationMapper.intoPageRequest(pagination);
         final var specification = productsSpecificationMapper
             .mapToSpecification(filters)
             .and((root, query, cb) -> {
@@ -47,7 +49,7 @@ public class ProductsService {
         final var entityPage = productsRepository.findAll(specification, pageRequest);
         log.info("found products count={}", entityPage.getNumberOfElements());
 
-        final var outPage = PaginationMapper.fromPage(entityPage, ProductsMapper::fromEntity);
+        final var outPage = paginationMapper.fromPage(entityPage, productsMapper::fromEntity);
         return outPage;
     }
 
@@ -57,11 +59,11 @@ public class ProductsService {
         final var categoryEntity = categoriesService.findCategoryById(product.category());
         log.info("found category with id={}", categoryEntity.getId());
 
-        var entity = ProductsMapper.intoEntity(product, categoryEntity);
+        var entity = productsMapper.intoEntity(product, categoryEntity);
         entity = productsRepository.save(entity);
         log.info("created product with id={}", entity.getId());
 
-        final var savedProduct = ProductsMapper.fromEntityDetails(entity);
+        final var savedProduct = productsMapper.fromEntityDetails(entity);
 
         return savedProduct;
     }
@@ -72,7 +74,7 @@ public class ProductsService {
         final var entity = findProductByIdActive(id);
         log.info("found product with id={}", id);
 
-        final var product = ProductsMapper.fromEntityDetails(entity);
+        final var product = productsMapper.fromEntityDetails(entity);
 
         return product;
     }

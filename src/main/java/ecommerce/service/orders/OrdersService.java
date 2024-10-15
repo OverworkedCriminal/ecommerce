@@ -44,6 +44,10 @@ import lombok.extern.slf4j.Slf4j;
 public class OrdersService {
 
     private final CountriesService countriesService;
+    private final OrdersMapper ordersMapper;
+    private final OrderProductsMapper orderProductsMapper;
+    private final AddressesMapper addressesMapper;
+    private final PaginationMapper paginationMapper;
     private final OrdersSpecificationMapper ordersSpecificationMapper;
     private final OrdersRepository ordersRepository;
     private final OrderProductsRepository orderProductsRepository;
@@ -71,7 +75,7 @@ public class OrdersService {
         }
         log.info("found order with id={}", id);
 
-        final var outOrder = OrdersMapper.fromEntity(orderEntity);
+        final var outOrder = ordersMapper.fromEntity(orderEntity);
         return outOrder;
     }
 
@@ -89,13 +93,13 @@ public class OrdersService {
             filters.setUsername(user.getName());
         }
 
-        final var pageRequest = PaginationMapper.intoPageRequest(pagination);
+        final var pageRequest = paginationMapper.intoPageRequest(pagination);
         final var specification = ordersSpecificationMapper.mapToSpecification(filters);
 
         final var entityPage = ordersRepository.findAll(specification, pageRequest);
         log.info("found orders count={}", entityPage.getNumberOfElements());
 
-        final var outPage = PaginationMapper.fromPage(entityPage, OrdersMapper::fromEntity);
+        final var outPage = paginationMapper.fromPage(entityPage, ordersMapper::fromEntity);
         return outPage;
     }
 
@@ -110,7 +114,7 @@ public class OrdersService {
 
         final var addressIn = orderIn.address();
         final var countryEntity = countriesService.findByIdActive(addressIn.country());
-        final var addressEntity = AddressesMapper.intoEntity(addressIn, countryEntity);
+        final var addressEntity = addressesMapper.intoEntity(addressIn, countryEntity);
 
         final Map<Long, InOrderProduct> orderProductInById = orderIn.products()
             .stream()
@@ -141,7 +145,7 @@ public class OrdersService {
             })
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        final var orderEntity = OrdersMapper.intoEntity(
+        final var orderEntity = ordersMapper.intoEntity(
             orderIn,
             user.getName(),
             addressEntity,
@@ -151,7 +155,7 @@ public class OrdersService {
         log.info("created order with id={}", orderEntity.getId());
 
         final var orderProductEntities = orderProducts.stream()
-            .map(orderedProduct -> OrderProductsMapper.intoEntity(
+            .map(orderedProduct -> orderProductsMapper.intoEntity(
                 orderedProduct.inOrderProduct(),
                 orderedProduct.product(),
                 savedOrderEntity
@@ -161,7 +165,7 @@ public class OrdersService {
         log.info("created order products count={}", savedOrderProductEntities.size());
 
         savedOrderEntity.setOrderProducts(savedOrderProductEntities);
-        final var orderOut = OrdersMapper.fromEntity(savedOrderEntity);
+        final var orderOut = ordersMapper.fromEntity(savedOrderEntity);
 
         return orderOut;
     }
@@ -193,7 +197,7 @@ public class OrdersService {
         }
 
         final var countryEntity = countriesService.findByIdActive(address.country());
-        final var addressEntity = AddressesMapper.intoEntity(address, countryEntity);
+        final var addressEntity = addressesMapper.intoEntity(address, countryEntity);
         addressEntity.setId(orderEntity.getAddress().getId());
 
         addressesRepository.save(addressEntity);

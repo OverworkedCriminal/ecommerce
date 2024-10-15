@@ -5,23 +5,24 @@ import java.util.function.Function;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Component;
 
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Component
+@RequiredArgsConstructor
 public class PaginationMapper {
 
-    public static PageRequest intoPageRequest(InPagination pagination) {
+    public PageRequest intoPageRequest(InPagination pagination) {
         return PageRequest.of(
             pagination.pageIdx(),
             pagination.pageSize()
         );
     }
 
-    public static <T, E> OutPage<T> fromPage(
+    public <T, E> OutPage<T> fromPage(
         Page<E> pageEntities,
         Function<E, T> mapFn
     ) {
