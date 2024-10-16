@@ -8,14 +8,14 @@ import ecommerce.dto.products.OutProductDetails;
 import ecommerce.exception.ValidationException;
 import ecommerce.repository.categories.entity.Category;
 import ecommerce.repository.products.entity.Product;
-import ecommerce.service.products.sanitizer.IProductsInputSanitizer;
+import ecommerce.service.utils.sanitizer.IUserInputSanitizer;
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
 public class ProductsMapper {
 
-    private final IProductsInputSanitizer productsInputSanitizer;
+    private final IUserInputSanitizer productsInputSanitizer;
 
     public Product intoEntity(InProduct product, Category category) throws ValidationException {
         final String name = productsInputSanitizer.sanitize(product.name());

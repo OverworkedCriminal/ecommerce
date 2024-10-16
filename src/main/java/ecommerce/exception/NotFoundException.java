@@ -32,4 +32,9 @@ public class NotFoundException extends Exception {
         return new NotFoundException(message);
     }
 
+    public static NotFoundException paymentMethod(long id) {
+        final var message = "payment method with id=%d not found".formatted(id);
+        return new NotFoundException(message);
+    }
+
 }

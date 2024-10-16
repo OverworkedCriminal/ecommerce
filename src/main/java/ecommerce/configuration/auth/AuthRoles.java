@@ -16,4 +16,6 @@ public class AuthRoles {
     public static final String CATEGORY_MANAGE = "ecommerce_manage_category";
 
     public static final String COUNTRY_MANAGE = "ecommerce_manage_country";
+
+    public static final String PAYMENT_METHOD_MANAGE = "ecommerce_manage_payment_method";
 }
