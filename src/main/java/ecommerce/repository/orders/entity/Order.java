@@ -1,10 +1,10 @@
 package ecommerce.repository.orders.entity;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import ecommerce.repository.addresses.entity.Address;
+import ecommerce.repository.payments.entity.Payment;
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -47,12 +47,18 @@ public class Order {
     )
     private Address address;
 
+    @OneToOne(
+        cascade = CascadeType.PERSIST
+    )
+    @JoinColumn(
+        name = "payment_id",
+        nullable = false
+    )
+    private Payment payment;
+
     @Nonnull
     private LocalDateTime orderedAt;
     private LocalDateTime completedAt;
-
-    @Nonnull
-    private BigDecimal price;
 
     @OneToMany(
         mappedBy = "order",

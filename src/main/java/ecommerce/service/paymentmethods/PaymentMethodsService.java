@@ -11,6 +11,7 @@ import ecommerce.dto.paymentmethods.OutPaymentMethod;
 import ecommerce.exception.NotFoundException;
 import ecommerce.exception.ValidationException;
 import ecommerce.repository.paymentmethods.PaymentMethodsRepository;
+import ecommerce.repository.paymentmethods.entity.PaymentMethod;
 import ecommerce.service.paymentmethods.mapper.PaymentMethodsMapper;
 import ecommerce.service.utils.sanitizer.IUserInputSanitizer;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,13 @@ public class PaymentMethodsService {
     private final PaymentMethodsMapper paymentMethodsMapper;
     private final IUserInputSanitizer userInputSanitizer;
     private final PaymentMethodsRepository paymentMethodsRepository;
+
+    public PaymentMethod findByIdActive(long id) throws NotFoundException {
+        final var payment = paymentMethodsRepository
+            .findByIdAndActiveTrue(id)
+            .orElseThrow(() -> NotFoundException.paymentMethod(id));
+        return payment;
+    }
 
     public List<OutPaymentMethod> getPaymentMethods() {
         final var paymentMethodEntities = paymentMethodsRepository.findByActiveTrue();
@@ -39,9 +47,7 @@ public class PaymentMethodsService {
     public OutPaymentMethod getPaymentMethod(long id) throws NotFoundException {
         log.trace("id={}", id);
 
-        final var entity = paymentMethodsRepository
-            .findByIdAndActiveTrue(id)
-            .orElseThrow(() -> NotFoundException.paymentMethod(id));
+        final var entity = findByIdActive(id);
         log.info("found payment method with id={}", id);
 
         final var paymentMethod = paymentMethodsMapper.fromEntity(entity);
@@ -68,9 +74,7 @@ public class PaymentMethodsService {
         log.trace("id={}", id);
         log.trace("{}", patch);
 
-        final var entity = paymentMethodsRepository
-            .findByIdAndActiveTrue(id)
-            .orElseThrow(() -> NotFoundException.paymentMethod(id));
+        final var entity = findByIdActive(id);
         log.info("found payment method with id={}", id);
 
         if (patch.name() != null) {
@@ -89,9 +93,7 @@ public class PaymentMethodsService {
     public void deletePaymentMethod(long id) throws NotFoundException {
         log.trace("id={}", id);
 
-        final var entity = paymentMethodsRepository
-            .findByIdAndActiveTrue(id)
-            .orElseThrow(() -> NotFoundException.paymentMethod(id));
+        final var entity = findByIdActive(id);
         log.info("found payment method with id={}", id);
 
         entity.setActive(false);

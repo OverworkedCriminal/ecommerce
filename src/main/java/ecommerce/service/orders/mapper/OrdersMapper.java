@@ -1,6 +1,5 @@
 package ecommerce.service.orders.mapper;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
@@ -10,7 +9,9 @@ import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.OutOrder;
 import ecommerce.repository.addresses.entity.Address;
 import ecommerce.repository.orders.entity.Order;
+import ecommerce.repository.payments.entity.Payment;
 import ecommerce.service.addresses.mapper.AddressesMapper;
+import ecommerce.service.payments.mapper.PaymentsMapper;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -19,19 +20,20 @@ public class OrdersMapper {
 
     private final OrderProductsMapper orderProductsMapper;
     private final AddressesMapper addressesMapper;
+    private final PaymentsMapper paymentsMapper;
 
     public Order intoEntity(
         InOrder order,
         String username,
         Address address,
-        BigDecimal price
+        Payment payment
     ) {
         return Order.builder()
             .username(username)
             .address(address)
+            .payment(payment)
             .orderedAt(LocalDateTime.now())
             .completedAt(null)
-            .price(price)
             .build();
     }
 
@@ -42,7 +44,7 @@ public class OrdersMapper {
             .address(addressesMapper.fromEntity(order.getAddress()))
             .orderedAt(order.getOrderedAt())
             .completedAt(order.getCompletedAt())
-            .price(order.getPrice())
+            .payment(paymentsMapper.fromEntity(order.getPayment()))
             .orderProducts(
                 order.getOrderProducts()
                     .stream()
