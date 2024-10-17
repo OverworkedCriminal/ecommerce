@@ -16,5 +16,5 @@ extends
 {
     Optional<Product> findByIdAndActiveTrue(long id);
 
-    List<Product> findByActiveTrueAndIdIn(Collection<Long> productIds);
+    List<Product> findByActiveTrueAndIdInOrderByIdAsc(Collection<Long> productIds);
 }

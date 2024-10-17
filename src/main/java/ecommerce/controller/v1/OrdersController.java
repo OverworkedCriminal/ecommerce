@@ -22,6 +22,7 @@ import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.InOrderCompletedAtUpdate;
 import ecommerce.dto.orders.InOrderFilters;
 import ecommerce.dto.orders.OutOrder;
+import ecommerce.dto.payments.InPaymentCompletedAtUpdate;
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
 import ecommerce.exception.ConflictException;
@@ -107,7 +108,7 @@ public class OrdersController {
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
             @ApiResponse(responseCode = "404", description = "any of the products or country does not exist"),
-            @ApiResponse(responseCode = "409", description = "order have already been completed")
+            @ApiResponse(responseCode = "409", description = "order has already been completed")
         }
     )
     public void putOrderAddress(
@@ -129,7 +130,7 @@ public class OrdersController {
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
             @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.ORDER_UPDATE_COMPLETED_AT + "," + AuthRoles.ORDER_UPDATE + "]"),
-            @ApiResponse(responseCode = "409", description = "order have already been completed")
+            @ApiResponse(responseCode = "409", description = "order has already been completed")
         }
     )
     public void putOrderCompletedAt(
@@ -137,6 +138,27 @@ public class OrdersController {
         @Validated @RequestBody InOrderCompletedAtUpdate update
     ) throws NotFoundException, ConflictException, ValidationException {
         ordersService.putOrderCompletedAt(id, update);
+    }
+
+    @PutMapping("/{id}/payment/completed-at")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Secured({ AuthRoles.ORDER_UPDATE_COMPLETED_AT, AuthRoles.ORDER_UPDATE })
+    @Operation(
+        summary = "marks order payment as completed by updating completedAt",
+        security = @SecurityRequirement(name = BEARER),
+        responses = {
+            @ApiResponse(responseCode = "204", description = "success"),
+            @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
+            @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
+            @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.ORDER_UPDATE_COMPLETED_AT + "," + AuthRoles.ORDER_UPDATE + "]"),
+            @ApiResponse(responseCode = "409", description = "order payment has already been completed")
+        }
+    )
+    public void putOrderPaymentCompletedAt(
+        @NotNull @PathVariable Long id,
+        @Validated @RequestBody InPaymentCompletedAtUpdate update
+    ) throws NotFoundException, ConflictException, ValidationException {
+        ordersService.putOrderPaymentCompletedAt(id, update);
     }
 
 }

@@ -1,11 +1,11 @@
-package ecommerce.service.products.sanitizer;
+package ecommerce.service.utils.sanitizer;
 
 import ecommerce.exception.ValidationException;
 
 /**
- * Interface used to sanitize products' titles and descriptions.
+ * Interface used to sanitize strings passed by users
  */
-public interface IProductsInputSanitizer {
+public interface IUserInputSanitizer {
 
     /**
      * Sanitize userInput.

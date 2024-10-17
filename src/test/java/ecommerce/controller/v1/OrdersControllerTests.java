@@ -29,6 +29,8 @@ import ecommerce.dto.addresses.InAddress;
 import ecommerce.dto.orders.InOrder;
 import ecommerce.dto.orders.InOrderCompletedAtUpdate;
 import ecommerce.dto.orders.InOrderProduct;
+import ecommerce.dto.payments.InPayment;
+import ecommerce.dto.payments.InPaymentCompletedAtUpdate;
 import ecommerce.exception.ConflictException;
 import ecommerce.exception.NotFoundException;
 import ecommerce.exception.ValidationException;
@@ -191,6 +193,7 @@ public class OrdersControllerTests {
                 "Baldur's Gate", 
                 1L
             ),
+            new InPayment(1L),
             List.of(
                 new InOrderProduct(1L, 10),
                 new InOrderProduct(2L, 15)
@@ -245,6 +248,7 @@ public class OrdersControllerTests {
                 "Baldur's Gate", 
                 1L
             ),
+            new InPayment(1L),
             null
         );
         test_postOrder_validation(order);
@@ -260,6 +264,7 @@ public class OrdersControllerTests {
                 "Baldur's Gate", 
                 1L
             ),
+            new InPayment(1L),
             Collections.emptyList()
         );
         test_postOrder_validation(order);
@@ -275,6 +280,7 @@ public class OrdersControllerTests {
                 "Baldur's Gate", 
                 1L
             ),
+            new InPayment(1L),
             List.of(
                 new InOrderProduct(1L, 0)
             )
@@ -295,6 +301,7 @@ public class OrdersControllerTests {
                 "Baldur's Gate", 
                 1L
             ),
+            new InPayment(1L),
             products
         );
 
@@ -304,7 +311,8 @@ public class OrdersControllerTests {
     @Test
     public void postOrder_addressNull() throws Exception {
         final var order = new InOrder(
-            null, 
+            null,
+            new InPayment(1L),
             List.of(
                 new InOrderProduct(1L, 10)
             )
@@ -323,6 +331,7 @@ public class OrdersControllerTests {
                 "Baldur's Gate", 
                 1L
             ),
+            new InPayment(1L),
             List.of(
                 new InOrderProduct(1L, 10)
             )
@@ -340,6 +349,7 @@ public class OrdersControllerTests {
                 "Baldur's Gate", 
                 1L
             ),
+            new InPayment(1L),
             List.of(
                 new InOrderProduct(1L, 10)
             )
@@ -357,6 +367,7 @@ public class OrdersControllerTests {
                 "Baldur's Gate", 
                 1L
             ),
+            new InPayment(1L),
             List.of(
                 new InOrderProduct(1L, 10)
             )
@@ -374,6 +385,7 @@ public class OrdersControllerTests {
                 "Baldur's Gate", 
                 1L
             ),
+            new InPayment(1L),
             List.of(
                 new InOrderProduct(1L, 10)
             )
@@ -391,6 +403,7 @@ public class OrdersControllerTests {
                 "Baldur's Gate", 
                 1L
             ),
+            new InPayment(1L),
             List.of(
                 new InOrderProduct(1L, 10)
             )
@@ -408,6 +421,7 @@ public class OrdersControllerTests {
                 "Baldur's Gate", 
                 1L
             ),
+            new InPayment(1L),
             List.of(
                 new InOrderProduct(1L, 10)
             )
@@ -425,6 +439,7 @@ public class OrdersControllerTests {
                 null,
                 1L
             ),
+            new InPayment(1L),
             List.of(
                 new InOrderProduct(1L, 10)
             )
@@ -442,6 +457,7 @@ public class OrdersControllerTests {
                 "",
                 1L
             ),
+            new InPayment(1L),
             List.of(
                 new InOrderProduct(1L, 10)
             )
@@ -459,6 +475,43 @@ public class OrdersControllerTests {
                 "Baldur's Gate",
                 null
             ),
+            new InPayment(1L),
+            List.of(
+                new InOrderProduct(1L, 10)
+            )
+        );
+        test_postOrder_validation(order);
+    }
+
+    @Test
+    public void postOrder_paymentNull() throws Exception {
+        final var order = new InOrder(
+            new InAddress(
+                "street",
+                "12", 
+                "12-345",
+                "Baldur's Gate",
+                1L
+            ),
+            null,
+            List.of(
+                new InOrderProduct(1L, 10)
+            )
+        );
+        test_postOrder_validation(order);
+    }
+
+    @Test
+    public void postOrder_paymentPaymentMethodNull() throws Exception {
+        final var order = new InOrder(
+            new InAddress(
+                "street",
+                "12", 
+                "12-345",
+                "Baldur's Gate",
+                1L
+            ),
+            new InPayment(null),
             List.of(
                 new InOrderProduct(1L, 10)
             )
@@ -481,6 +534,7 @@ public class OrdersControllerTests {
                 "Baldur's Gate",
                 1L
             ),
+            new InPayment(1L),
             List.of(
                 new InOrderProduct(1L, 10)
             )
@@ -791,6 +845,141 @@ public class OrdersControllerTests {
                     )
             )
             .andExpect(ControllerTestUtils.expectStatus(HttpStatus.CONFLICT));
+    }
+
+    //#endregion
+
+    //#region putOrderPaymentCompletedAt
+
+    private void test_putOrderPaymentCompletedAt_statusCode(
+        HttpStatus expectedStatus,
+        InPaymentCompletedAtUpdate update,
+        RequestPostProcessor postProcessor
+    ) throws Exception {
+        var requestBuilder = MockMvcRequestBuilders
+            .put("/api/v1/orders/1/payment/completed-at")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsBytes(update));
+        if (postProcessor != null) {
+            requestBuilder = requestBuilder.with(postProcessor);
+        }
+        
+        mvc
+            .perform(requestBuilder)
+            .andExpect(ControllerTestUtils.expectStatus(expectedStatus));
+    }
+
+    private void test_putOrderPaymentCompletedAt_authorization(
+        HttpStatus expectedStatus,
+        RequestPostProcessor postProcessor
+    ) throws Exception {
+        final var update = new InPaymentCompletedAtUpdate(LocalDateTime.now());
+        test_putOrderPaymentCompletedAt_statusCode(expectedStatus, update, postProcessor);
+    }
+
+    @Test
+    public void putOrderPaymentCompletedAt_statusCode204_ORDER_UPDATE() throws Exception {
+        test_putOrderPaymentCompletedAt_authorization(
+            HttpStatus.NO_CONTENT, 
+            SecurityMockMvcRequestPostProcessors
+                .jwt()
+                .authorities(new SimpleGrantedAuthority(AuthRoles.ORDER_UPDATE))
+        );
+    }
+
+    @Test
+    public void putOrderPaymentCompletedAt_statusCode204_ORDER_UPDATE_COMPLETED_AT() throws Exception {
+        test_putOrderPaymentCompletedAt_authorization(
+            HttpStatus.NO_CONTENT, 
+            SecurityMockMvcRequestPostProcessors
+                .jwt()
+                .authorities(new SimpleGrantedAuthority(AuthRoles.ORDER_UPDATE_COMPLETED_AT))
+        );
+    }
+
+    @Test
+    public void putOrderPaymentCompletedAt_unauthorized() throws Exception {
+        test_putOrderPaymentCompletedAt_authorization(
+            HttpStatus.UNAUTHORIZED,
+            null
+        );
+    }
+
+    @Test
+    public void putOrderPaymentCompletedAt_forbidden() throws Exception {
+        test_putOrderPaymentCompletedAt_authorization(
+            HttpStatus.FORBIDDEN,
+            SecurityMockMvcRequestPostProcessors.jwt()
+        );
+    }
+
+    @Test
+    public void putOrderPaymentCompletedAt_completedAtNull() throws Exception {
+        final var update = new InPaymentCompletedAtUpdate(null);
+
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .put("/api/v1/orders/1/payment/completed-at")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(update))
+                    .with(
+                        SecurityMockMvcRequestPostProcessors
+                            .jwt()
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.ORDER_UPDATE))
+                    )
+            )
+            .andExpect(ControllerTestUtils.expectStatus(HttpStatus.BAD_REQUEST));
+    }
+
+    private void test_putOrderPaymentCompletedAt_exceptionHandling(
+        HttpStatus expectedStatus,
+        Class<? extends Exception> exceptionClass
+    ) throws Exception {
+        Mockito
+            .doThrow(exceptionClass)
+            .when(ordersService)
+            .putOrderPaymentCompletedAt(Mockito.anyLong(), Mockito.any());
+
+        final var update = new InPaymentCompletedAtUpdate(LocalDateTime.now());
+
+        mvc
+            .perform(
+                MockMvcRequestBuilders
+                    .put("/api/v1/orders/1/payment/completed-at")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(update))
+                    .with(
+                        SecurityMockMvcRequestPostProcessors
+                            .jwt()
+                            .authorities(new SimpleGrantedAuthority(AuthRoles.ORDER_UPDATE))
+                    )
+            )
+            .andExpect(ControllerTestUtils.expectStatus(expectedStatus));
+    }
+
+    @Test
+    public void putOrderPaymentCompletedAt_notFoundException() throws Exception {
+        test_putOrderPaymentCompletedAt_exceptionHandling(
+            HttpStatus.NOT_FOUND,
+            NotFoundException.class
+        );
+    }
+
+    @Test
+    public void putOrderPaymentCompletedAt_conflictException() throws Exception {
+        test_putOrderPaymentCompletedAt_exceptionHandling(
+            HttpStatus.CONFLICT,
+            ConflictException.class
+        );
+    }
+
+    @Test
+    public void putOrderPaymentCompletedAt_validationException() throws Exception {
+        test_putOrderPaymentCompletedAt_exceptionHandling(
+            HttpStatus.BAD_REQUEST,
+            ValidationException.class
+        );
     }
 
     //#endregion

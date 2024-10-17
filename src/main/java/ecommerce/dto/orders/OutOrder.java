@@ -1,10 +1,10 @@
 package ecommerce.dto.orders;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import ecommerce.dto.addresses.OutAddress;
+import ecommerce.dto.payments.OutPayment;
 import lombok.Builder;
 
 @Builder
@@ -14,6 +14,6 @@ public record OutOrder(
     OutAddress address,
     LocalDateTime orderedAt,
     LocalDateTime completedAt,
-    BigDecimal price,
+    OutPayment payment,
     List<OutOrderProduct> orderProducts
 ) {}

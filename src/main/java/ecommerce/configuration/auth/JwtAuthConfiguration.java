@@ -55,6 +55,10 @@ public class JwtAuthConfiguration {
                     .requestMatchers(HttpMethod.POST, "/api/v1/products").authenticated()
                     .requestMatchers(HttpMethod.DELETE, "/api/v1/products/*").authenticated()
                     .requestMatchers(HttpMethod.PATCH, "/api/v1/products/*").authenticated()
+                    // payment methods
+                    .requestMatchers(HttpMethod.POST, "/api/v1/payment-methods").authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/v1/payment-methods/*").authenticated()
+                    .requestMatchers(HttpMethod.PATCH, "/api/v1/payment-methods/*").authenticated()
                     // rest
                     .anyRequest().permitAll()
             )

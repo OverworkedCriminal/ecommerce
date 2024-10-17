@@ -1,9 +1,8 @@
 package ecommerce.service.orders;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -16,6 +15,7 @@ import ecommerce.dto.orders.InOrderCompletedAtUpdate;
 import ecommerce.dto.orders.InOrderFilters;
 import ecommerce.dto.orders.InOrderProduct;
 import ecommerce.dto.orders.OutOrder;
+import ecommerce.dto.payments.InPaymentCompletedAtUpdate;
 import ecommerce.dto.shared.InPagination;
 import ecommerce.dto.shared.OutPage;
 import ecommerce.exception.ConflictException;
@@ -25,13 +25,15 @@ import ecommerce.repository.addresses.AddressesRepository;
 import ecommerce.repository.orders.OrderProductsRepository;
 import ecommerce.repository.orders.OrdersRepository;
 import ecommerce.repository.orders.entity.Order;
+import ecommerce.repository.payments.PaymentsRepository;
 import ecommerce.repository.products.ProductsRepository;
-import ecommerce.repository.products.entity.Product;
 import ecommerce.service.addresses.mapper.AddressesMapper;
 import ecommerce.service.countries.CountriesService;
 import ecommerce.service.orders.mapper.OrderProductsMapper;
 import ecommerce.service.orders.mapper.OrdersMapper;
 import ecommerce.service.orders.mapper.OrdersSpecificationMapper;
+import ecommerce.service.paymentmethods.PaymentMethodsService;
+import ecommerce.service.payments.mapper.PaymentsMapper;
 import ecommerce.service.utils.AuthUtils;
 import ecommerce.service.utils.CollectionUtils;
 import ecommerce.service.utils.mapper.PaginationMapper;
@@ -44,15 +46,18 @@ import lombok.extern.slf4j.Slf4j;
 public class OrdersService {
 
     private final CountriesService countriesService;
+    private final PaymentMethodsService paymentMethodsService;
     private final OrdersMapper ordersMapper;
     private final OrderProductsMapper orderProductsMapper;
     private final AddressesMapper addressesMapper;
+    private final PaymentsMapper paymentsMapper;
     private final PaginationMapper paginationMapper;
     private final OrdersSpecificationMapper ordersSpecificationMapper;
     private final OrdersRepository ordersRepository;
     private final OrderProductsRepository orderProductsRepository;
     private final ProductsRepository productsRepository;
     private final AddressesRepository addressesRepository;
+    private final PaymentsRepository paymentsRepository;
 
     public OutOrder getOrder(Authentication user, long id) throws NotFoundException {
         log.trace("id={}", id);
@@ -112,59 +117,56 @@ public class OrdersService {
 
         validatePostOrderNoDuplicatedProducts(orderIn);
 
-        final var addressIn = orderIn.address();
-        final var countryEntity = countriesService.findByIdActive(addressIn.country());
-        final var addressEntity = addressesMapper.intoEntity(addressIn, countryEntity);
+        final var countryEntity = countriesService.findByIdActive(orderIn.address().country());
+        log.info("found country with id={}", countryEntity.getId());
 
-        final Map<Long, InOrderProduct> orderProductInById = orderIn.products()
-            .stream()
-            .collect(Collectors.toMap(
-                orderProductIn -> orderProductIn.productId(),
-                orderProductIn -> orderProductIn
-            ));
+        final var paymentMethodEntity = paymentMethodsService.findByIdActive(orderIn.payment().paymentMethod());
+        log.info("found payment method with id={}", paymentMethodEntity.getId());
 
-        final var productIds = orderProductInById.keySet();
-        final var productEntities = productsRepository.findByActiveTrueAndIdIn(productIds);
+        // Sorted by ID to make working with products easier
+        final var orderInProducts = orderIn.products();
+        orderInProducts.sort((a, b) -> Long.compare(a.productId(), b.productId()));
+        final var productIds = orderInProducts.stream()
+            .map(product -> product.productId())
+            .collect(Collectors.toList());
+
+        // Sorted by ID to make working with products easier
+        final var productEntities = productsRepository.findByActiveTrueAndIdInOrderByIdAsc(productIds);
         if (productEntities.size() != productIds.size()) {
             throw new NotFoundException("product not found");
         }
         log.info("found all ordered products count={}", productEntities.size());
 
-        final List<Tuple> orderProducts = productEntities.stream()
-            .map(product -> new Tuple(
-                orderProductInById.get(product.getId()),
-                product
-            ))
-            .collect(Collectors.toList());
-
-        final var summedPrice = orderProducts.stream()
-            .map(orderedProduct -> {
-                final var quantity = orderedProduct.inOrderProduct().quantity();
-                final var price = orderedProduct.product().getPrice();
-                return price.multiply(BigDecimal.valueOf(quantity));
+        final var summedPrice = IntStream.range(0, orderInProducts.size())
+            .mapToObj(i -> {
+                final var quantity = BigDecimal.valueOf(orderInProducts.get(i).quantity());
+                final var price = productEntities.get(i).getPrice();
+                return price.multiply(quantity);
             })
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        final var addressEntity = addressesMapper.intoEntity(orderIn.address(), countryEntity);
+        final var paymentEntity = paymentsMapper.intoEntity(paymentMethodEntity, summedPrice);
         final var orderEntity = ordersMapper.intoEntity(
             orderIn,
             user.getName(),
             addressEntity,
-            summedPrice
+            paymentEntity
         );
         final var savedOrderEntity = ordersRepository.save(orderEntity);
         log.info("created order with id={}", orderEntity.getId());
 
-        final var orderProductEntities = orderProducts.stream()
-            .map(orderedProduct -> orderProductsMapper.intoEntity(
-                orderedProduct.inOrderProduct(),
-                orderedProduct.product(),
+        var orderProductEntities = IntStream.range(0, orderInProducts.size())
+            .mapToObj(i -> orderProductsMapper.intoEntity(
+                orderInProducts.get(i),
+                productEntities.get(i),
                 savedOrderEntity
             ))
             .collect(Collectors.toList());
-        final var savedOrderProductEntities = orderProductsRepository.saveAll(orderProductEntities);
-        log.info("created order products count={}", savedOrderProductEntities.size());
+        orderProductEntities = orderProductsRepository.saveAll(orderProductEntities);
+        log.info("created order products count={}", orderProductEntities.size());
 
-        savedOrderEntity.setOrderProducts(savedOrderProductEntities);
+        savedOrderEntity.setOrderProducts(orderProductEntities);
         final var orderOut = ordersMapper.fromEntity(savedOrderEntity);
 
         return orderOut;
@@ -214,11 +216,13 @@ public class OrdersService {
         final var orderEntity = ordersRepository
             .findById(id)
             .orElseThrow(() -> NotFoundException.order(id));
+        log.info("found order with id={}", id);
 
         final var completedAt = orderEntity.getCompletedAt();
         if (completedAt != null) {
             throw ConflictException.orderAlreadyCompleted(id);
-        } else if (!update.completedAt().isAfter(orderEntity.getOrderedAt())) {
+        } 
+        if (!update.completedAt().isAfter(orderEntity.getOrderedAt())) {
             throw new ValidationException("completedAt must be after orderedAt");
         }
 
@@ -226,6 +230,35 @@ public class OrdersService {
         ordersRepository.save(orderEntity);
 
         log.info("patched order with id={}", id);
+    }
+
+    public void putOrderPaymentCompletedAt(
+        long id,
+        InPaymentCompletedAtUpdate update
+    ) throws NotFoundException, ConflictException, ValidationException {
+        log.trace("id={}", id);
+        log.trace("{}", update);
+
+        final var orderEntity = ordersRepository
+            .findById(id)
+            .orElseThrow(() -> NotFoundException.order(id));
+        log.info("found order with id={}", id);
+
+        final var paymentEntity = orderEntity.getPayment();
+        final var completedAt = paymentEntity.getCompletedAt();
+        if (completedAt != null) {
+            throw new ConflictException(
+                "order's with id=%d payment has already been completed"
+                    .formatted(id)
+            );
+        }
+        if (!update.completedAt().isAfter(orderEntity.getOrderedAt())) {
+            throw new ValidationException("payment's completedAt must be after orderedAt");
+        }
+
+        paymentEntity.setCompletedAt(update.completedAt());
+        paymentsRepository.save(paymentEntity);
+        log.info("updated order's with id={} payment with id={}", orderEntity.getId(), paymentEntity.getId());
     }
 
     private void validatePostOrderNoDuplicatedProducts(InOrder order) throws ValidationException {
@@ -236,8 +269,3 @@ public class OrdersService {
         }
     }
 }
-
-record Tuple (
-    InOrderProduct inOrderProduct,
-    Product product
-) {}
