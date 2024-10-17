@@ -7,7 +7,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import ecommerce.dto.categories.InCategory;
-import ecommerce.dto.categories.InCategoryPatch;
 import ecommerce.dto.categories.OutCategory;
 import ecommerce.exception.ConflictException;
 import ecommerce.exception.NotFoundException;
@@ -76,29 +75,26 @@ public class CategoriesService {
         return categoryOut;
     }
     
-    public void patchCategory(
+    public void putCategory(
         long id,
-        InCategoryPatch patch
+        InCategory inCategory
     ) throws NotFoundException, ConflictException, ValidationException {
         log.trace("id={}", id);
-        log.trace("{}", patch);
-
-        final var categoryEntity = findCategoryById(id);
-
-        final var name = patch.name();
-        if (name != null) {
-            categoryEntity.setName(name);
+        log.trace("{}", inCategory);
+        
+        final var categoryToEdit = findCategoryById(id);
+        Category parentCategory = null;
+        if (inCategory.parentCategory() != null) {
+            parentCategory = findCategoryById(inCategory.parentCategory());
+            validateNoCategoriesCycle(parentCategory, categoryToEdit);
         }
 
-        final var parentCategoryId = patch.parentCategory();
-        if (parentCategoryId != null) {
-            final var parentCategoryEntity = findCategoryById(parentCategoryId);
-            validateNoCategoriesCycle(parentCategoryEntity, categoryEntity);
-            categoryEntity.setParentCategory(parentCategoryEntity);
-        }
+        final var categoryToSave = categoriesMapper
+            .intoEntity(inCategory, parentCategory);
+        categoryToSave.setId(categoryToEdit.getId());
 
         try {
-            categoriesRepository.save(categoryEntity);
+            categoriesRepository.save(categoryToSave);
             log.info("updated category with id={}", id);
 
         } catch (DataIntegrityViolationException e) {
