@@ -41,7 +41,7 @@ public class Payment {
     private PaymentMethod paymentMethod;
 
     @Nonnull
-    @Column(precision = 2)
+    @Column(scale = 2)
     private BigDecimal amount;
 
     private LocalDateTime completedAt;
