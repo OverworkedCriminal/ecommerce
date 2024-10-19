@@ -34,6 +34,17 @@ public class ProductsService {
     private final ProductsSpecificationMapper productsSpecificationMapper;
     private final PaginationMapper paginationMapper;
 
+    public OutProductDetails getProduct(long id) throws NotFoundException {
+        log.trace("id={}", id);
+
+        final var entity = findProductByIdActive(id);
+        log.info("found product with id={}", id);
+
+        final var product = productsMapper.fromEntityDetails(entity);
+
+        return product;
+    }
+
     public OutPage<OutProduct> getProducts(
         InProductFilters filters,
         InPagination pagination
@@ -69,17 +80,6 @@ public class ProductsService {
         final var savedProduct = productsMapper.fromEntityDetails(entity);
 
         return savedProduct;
-    }
-
-    public OutProductDetails getProduct(long id) throws NotFoundException {
-        log.trace("id={}", id);
-
-        final var entity = findProductByIdActive(id);
-        log.info("found product with id={}", id);
-
-        final var product = productsMapper.fromEntityDetails(entity);
-
-        return product;
     }
 
     public void deleteProduct(long id) throws NotFoundException {
