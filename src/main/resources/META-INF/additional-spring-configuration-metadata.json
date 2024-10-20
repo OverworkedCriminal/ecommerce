@@ -1,0 +1,22 @@
+{"properties": [
+  {
+    "name": "ecommerce.auth.jwt.hmac.key",
+    "type": "java.lang.String",
+    "description": "key used by hmac algorithm to verify JWT signature"
+  },
+  {
+    "name": "ecommerce.logging.level.console",
+    "type": "java.lang.String",
+    "description": "logs threshold for console logs"
+  },
+  {
+    "name": "ecommerce.logging.level.file",
+    "type": "java.lang.String",
+    "description": "logs threshold for file logs (TRACE is recommended)"
+  },
+  {
+    "name": "ecommerce.openapi.url",
+    "type": "java.lang.String",
+    "description": "OpenAPI server url"
+  }
+]}

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <springProperty name="LOG_FILE" source="logging.file.name" defaultValue="logs/ecommerce.log"/>
+    <springProperty name="LOG_LEVEL_CONSOLE" source="ecommerce.logging.level.console" defaultValue="DEBUG"/>
+    <springProperty name="LOG_LEVEL_FILE" source="ecommerce.logging.level.file" defaultValue="TRACE"/>
+
+    <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/>
+    <logger name="ecommerce" level="TRACE"/>
+
+    <conversionRule conversionWord="highlightex" converterClass="ecommerce.configuration.logs.LogsHighlighter" />
+
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+    </root>
+
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${LOG_LEVEL_CONSOLE}</level>
+        </filter>
+        <target>SYSTEM_OUT</target>
+        <encoder>
+            <pattern>%black(%d{HH:mm:ss.SSS}) %highlightex(%-5level) %black(%X{requestId}) %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${LOG_LEVEL_FILE}</level>
+        </filter>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %level %logger{36} %X{requestId} %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>10GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+
+</configuration>
