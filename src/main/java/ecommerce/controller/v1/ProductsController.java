@@ -125,7 +125,7 @@ public class ProductsController {
             @ApiResponse(
                 responseCode = "403",
                 description = "user lacks any of the roles [" + AuthRoles.PRODUCT_CREATE + ", " + AuthRoles.PRODUCT_UPDATE + "]"),
-            @ApiResponse(responseCode = "404", description = "product does not exist")
+            @ApiResponse(responseCode = "404", description = "product or category does not exist")
         }
     )
     public void patchProduct(

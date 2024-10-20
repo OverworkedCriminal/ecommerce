@@ -60,6 +60,19 @@ public class OrdersService {
     private final AddressesRepository addressesRepository;
     private final PaymentsRepository paymentsRepository;
 
+    /**
+     * Find order by ID.
+     * Underprivileged users can find only their own orders.
+     * 
+     * @param user
+     * @param id
+     * @return found order
+     * @throws NotFoundException
+     * <ul>
+     *   <li>order does not exist</li>
+     *   <li>order does not belong to the user (for underprivileged users)</li>
+     * </ul>
+     */
     public OutOrder getOrder(Authentication user, long id) throws NotFoundException {
         log.trace("id={}", id);
 
@@ -85,6 +98,15 @@ public class OrdersService {
         return outOrder;
     }
 
+    /**
+     * Find orders page with specified filters.
+     * Underprivileged users can search through only their own orders.
+     * 
+     * @param user
+     * @param filters
+     * @param pagination
+     * @return found filters
+     */
     public OutPage<OutOrder> getOrders(Authentication user, InOrderFilters filters, InPagination pagination) {
         log.trace("{}", filters);
         log.trace("{}", pagination);
@@ -109,6 +131,20 @@ public class OrdersService {
         return outPage;
     }
 
+    /**
+     * Create order.
+     * 
+     * @param user
+     * @param orderIn
+     * @return created order
+     * @throws NotFoundException
+     * <ul>
+     *   <li>country does not exist</li>
+     *   <li>payment method does not exist</li>
+     *   <li>some of ordered products does not exist</li>
+     * </ul>
+     * @throws ValidationException order contains duplicated product
+     */
     @Transactional
     public OutOrder postOrder(
         Authentication user,
@@ -178,6 +214,21 @@ public class OrdersService {
         return orderOut;
     }
 
+    /**
+     * Update order's address.
+     * Underprivileged users can change address only of their own orders.
+     * 
+     * @param user
+     * @param id
+     * @param address
+     * @throws NotFoundException
+     * <ul>
+     *   <li>order does not exist</li>
+     *   <li>order does not belong to the user (for underprivileged users)</li>
+     *   <li>country does not exist</li>
+     * </ul>
+     * @throws ConflictException order has already been completed
+     */
     public void putOrderAddress(
         Authentication user,
         Long id,
@@ -212,6 +263,15 @@ public class OrdersService {
         log.info("updated order with id={} address", orderEntity.getId());
     }
 
+    /**
+     * Update order's 'completedAt'
+     * 
+     * @param id
+     * @param update
+     * @throws NotFoundException order does not exist
+     * @throws ConflictException order has already been completed
+     * @throws ValidationException 'completedAt' is invalid
+     */
     public void putOrderCompletedAt(
         long id,
         InOrderCompletedAtUpdate update
@@ -241,6 +301,15 @@ public class OrdersService {
         log.info("patched order with id={}", id);
     }
 
+    /**
+     * Update payment's 'completedAt'
+     * 
+     * @param id
+     * @param update
+     * @throws NotFoundException order does not exist
+     * @throws ConflictException order's payment has already been completed
+     * @throws ValidationException invalid 'completedAt'
+     */
     public void putOrderPaymentCompletedAt(
         long id,
         InPaymentCompletedAtUpdate update

@@ -26,11 +26,11 @@ public class CategoriesService {
     private final CategoriesRepository categoriesRepository;
 
     /**
-     * Finds category by ID or throw NotFoundException when not found
+     * Finds category by ID
      * 
      * @param id
-     * @return
-     * @throws NotFoundException 
+     * @return found category
+     * @throws NotFoundException category does not exist
      */
     public Category findCategoryById(long id) throws NotFoundException {
         final var category = categoriesRepository
@@ -39,6 +39,11 @@ public class CategoriesService {
         return category;
     }
 
+    /**
+     * Find all categories
+     * 
+     * @return found categories
+     */
     public List<OutCategory> getCategories() {
         final var categoryEntities = categoriesRepository.findAll();
         log.info("found categories count={}", categoryEntities.size());
@@ -50,6 +55,14 @@ public class CategoriesService {
         return outCategories;
     }
 
+    /**
+     * Create category
+     * 
+     * @param categoryIn
+     * @return created category
+     * @throws NotFoundException parent category does not exist
+     * @throws ConflictException category with such name already exist
+     */
     public OutCategory postCategory(
         InCategory categoryIn
     ) throws NotFoundException, ConflictException {
@@ -74,7 +87,20 @@ public class CategoriesService {
 
         return categoryOut;
     }
-    
+
+    /**
+     * Update category
+     * 
+     * @param id
+     * @param inCategory
+     * @throws NotFoundException
+     * <ul>
+     *   <li>category does not exist</li>
+     *   <li>parent category does not exist</li>
+     * </ul>
+     * @throws ConflictException category with such name already exist
+     * @throws ValidationException updating parent category would cause a cycle
+     */
     public void putCategory(
         long id,
         InCategory inCategory
@@ -101,7 +127,14 @@ public class CategoriesService {
             throw new ConflictException("category with such name already exist: " + e.getMessage());
         }
     }
-    
+
+    /**
+     * Delete category
+     * 
+     * @param id
+     * @throws NotFoundException category does not exist
+     * @throws ConflictException category cannot be removed because it's assigned to some product
+     */
     public void deleteCategory(long id) throws NotFoundException, ConflictException {
         log.trace("id={}", id);
 

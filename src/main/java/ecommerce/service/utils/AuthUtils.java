@@ -14,6 +14,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AuthUtils {
 
+    /**
+     * @param user authenticated user
+     * @param requiredRoles
+     * @return true when user has any of the roles, false otherwise
+     */
     public static boolean userHasAnyRole(
         Authentication user,
         String... requiredRoles
@@ -25,6 +30,11 @@ public class AuthUtils {
         return hasAnyRole;
     }
 
+    /**
+     * @param user authenticated user
+     * @param requiredRoles
+     * @return true when user has all roles, false otherwise
+     */
     public static boolean userHasAllRoles(
         Authentication user,
         String... requiredRoles

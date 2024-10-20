@@ -25,11 +25,11 @@ public class CountriesService {
     private final CountriesRepository countriesRepository;
 
     /**
-     * Finds country by ID and active=true or throws NotFoundException
+     * Finds country by ID
      * 
      * @param id
-     * @return
-     * @throws NotFoundException 
+     * @return found country
+     * @throws NotFoundException country does not exist or it is inactive
      */
     public Country findByIdActive(long id) throws NotFoundException {
         final var country = countriesRepository
@@ -38,6 +38,13 @@ public class CountriesService {
         return country;
     }
 
+    /**
+     * Find country by id
+     * 
+     * @param id
+     * @return found country
+     * @throws NotFoundException country does not exist or is inactive
+     */
     public OutCountry getCountry(long id) throws NotFoundException {
         final var countryEntity = findByIdActive(id);
         log.info("found country with id={}", id);
@@ -46,6 +53,11 @@ public class CountriesService {
         return outCountry;
     }
 
+    /**
+     * Find all countries (with 'active'=true )
+     * 
+     * @return found countries
+     */
     public List<OutCountry> getCountries() {
         final var countryEntities = countriesRepository.findByActiveTrue();
         log.info("found countries count={}", countryEntities.size());
@@ -57,6 +69,13 @@ public class CountriesService {
         return outCountries;
     }
 
+    /**
+     * Create country
+     * 
+     * @param inCountry
+     * @return created country
+     * @throws ConflictException country with such name already exist
+     */
     public OutCountry postCountry(InCountry inCountry) throws ConflictException {
         log.trace("{}", inCountry);
 
@@ -86,6 +105,12 @@ public class CountriesService {
         return outCountry;
     }
 
+    /**
+     * Delete country by setting 'active' to false
+     * 
+     * @param id
+     * @throws NotFoundException country does not exist or is inactive
+     */
     public void deleteCountry(long id) throws NotFoundException {
         final var country = findByIdActive(id);
         log.info("found country with id={}", id);
