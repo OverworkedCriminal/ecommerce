@@ -7,7 +7,7 @@ public class ConflictException extends Exception {
     }
 
     public static ConflictException orderAlreadyCompleted(long id) {
-        final var message = "order with id=%d have already been completed".formatted(id);
+        final var message = "order with id=%d has already been completed".formatted(id);
         return new ConflictException(message);
     }
 }
