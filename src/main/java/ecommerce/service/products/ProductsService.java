@@ -34,6 +34,13 @@ public class ProductsService {
     private final ProductsSpecificationMapper productsSpecificationMapper;
     private final PaginationMapper paginationMapper;
 
+    /**
+     * Find product by id
+     * 
+     * @param id
+     * @return found product's details
+     * @throws NotFoundException product with id does not exist or is inactive
+     */
     public OutProductDetails getProduct(long id) throws NotFoundException {
         log.trace("id={}", id);
 
@@ -45,6 +52,13 @@ public class ProductsService {
         return product;
     }
 
+    /**
+     * Find active products page with specified filters
+     * 
+     * @param filters
+     * @param pagination
+     * @return found products
+     */
     public OutPage<OutProduct> getProducts(
         InProductFilters filters,
         InPagination pagination
@@ -67,6 +81,14 @@ public class ProductsService {
         return outPage;
     }
 
+    /**
+     * Create product
+     * 
+     * @param product
+     * @return created product's details
+     * @throws NotFoundException when category does not exist
+     * @throws ValidationException when 'name' or 'description' is invalid
+     */
     public OutProductDetails postProduct(InProduct product) throws NotFoundException, ValidationException {
         log.trace("{}", product);
 
@@ -82,6 +104,12 @@ public class ProductsService {
         return savedProduct;
     }
 
+    /**
+     * Delete product by setting 'active' to false
+     * 
+     * @param id
+     * @throws NotFoundException when product does not exist or is inactive
+     */
     public void deleteProduct(long id) throws NotFoundException {
         log.trace("id={}", id);
 
@@ -94,6 +122,18 @@ public class ProductsService {
         log.info("deleted product with id={}", id);
     }
 
+    /**
+     * Update some properties of the product
+     * 
+     * @param id
+     * @param productPatch
+     * @throws NotFoundException
+     * <ul>
+     *   <li>when product does not exist or is inactive</li>
+     *   <li>when updated category does not exist</li>
+     * </ul>
+     * @throws ValidationException when 'name' or 'description' is invalid
+     */
     public void patchProduct(
         long id,
         InProductPatch productPatch
