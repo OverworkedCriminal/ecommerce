@@ -45,6 +45,20 @@ public class ProductsController {
 
     private final ProductsService productsService;
 
+    @GetMapping("/{id}")
+    @Operation(
+        summary = "fetch single active product",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "success"),
+            @ApiResponse(responseCode = "404", description = "product does not exist")
+        }
+    )
+    public OutProductDetails getProduct(
+        @NotNull @PathVariable Long id
+    ) throws NotFoundException {
+        return productsService.getProduct(id);
+    }
+
     @GetMapping("")
     @Operation(
         summary = "fetch page of active products",
@@ -77,20 +91,6 @@ public class ProductsController {
         @Validated @RequestBody InProduct product
     ) throws NotFoundException, ValidationException {
         return productsService.postProduct(product);
-    }
-
-    @GetMapping("/{id}")
-    @Operation(
-        summary = "fetch single active product",
-        responses = {
-            @ApiResponse(responseCode = "200", description = "success"),
-            @ApiResponse(responseCode = "404", description = "product does not exist")
-        }
-    )
-    public OutProductDetails getProduct(
-        @NotNull @PathVariable Long id
-    ) throws NotFoundException {
-        return productsService.getProduct(id);
     }
 
     @DeleteMapping("/{id}")

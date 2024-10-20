@@ -20,7 +20,6 @@ import ecommerce.configuration.auth.AuthRoles;
 import ecommerce.configuration.auth.JwtAuthConfiguration;
 import ecommerce.controller.utils.ControllerTestUtils;
 import ecommerce.dto.categories.InCategory;
-import ecommerce.dto.categories.InCategoryPatch;
 import ecommerce.exception.ConflictException;
 import ecommerce.exception.NotFoundException;
 import ecommerce.service.categories.CategoriesService;
@@ -178,19 +177,19 @@ public class CategoriesControllerTests {
 
     //#endregion
 
-    //#region patchCategory
+    //#region putCategory
 
-    private void test_patchCategory_authorization(
+    private void test_putCategory_authorization(
         HttpStatus expectedStatus,
         @Nullable RequestPostProcessor postProcessor
     ) throws Exception {
-        final var category = new InCategoryPatch(
+        final var category = new InCategory(
             "name",
             null
         );
 
         var requestBuilder = MockMvcRequestBuilders
-            .patch("/api/v1/categories/1")
+            .put("/api/v1/categories/1")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsBytes(category));
         if (postProcessor != null) {
@@ -203,8 +202,8 @@ public class CategoriesControllerTests {
     }
 
     @Test
-    public void patchCategory_statusCode204() throws Exception {
-        test_patchCategory_authorization(
+    public void putCategory_statusCode204() throws Exception {
+        test_putCategory_authorization(
             HttpStatus.NO_CONTENT,
             SecurityMockMvcRequestPostProcessors
                 .jwt()
@@ -213,28 +212,28 @@ public class CategoriesControllerTests {
     }
 
     @Test
-    public void patchCategory_unauthorized() throws Exception {
-        test_patchCategory_authorization(
+    public void putCategory_unauthorized() throws Exception {
+        test_putCategory_authorization(
             HttpStatus.UNAUTHORIZED, 
             null
         );
     }
 
     @Test
-    public void patchCategory_forbidden() throws Exception {
-        test_patchCategory_authorization(
+    public void putCategory_forbidden() throws Exception {
+        test_putCategory_authorization(
             HttpStatus.FORBIDDEN, 
             SecurityMockMvcRequestPostProcessors.jwt()
         );
     }
 
-    private void test_patchCategory_validation(
-        InCategoryPatch category
+    private void test_putCategory_validation(
+        InCategory category
     ) throws Exception {
         mvc
             .perform(
                 MockMvcRequestBuilders
-                    .patch("/api/v1/categories/1")
+                    .put("/api/v1/categories/1")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsBytes(category))
                     .with(
@@ -247,15 +246,24 @@ public class CategoriesControllerTests {
     }
 
     @Test
-    public void patchCategory_emptyName() throws Exception {
-        final var category = new InCategoryPatch(
+    public void putCategory_nameNull() throws Exception {
+        final var category = new InCategory(
+            null,
+            null
+        );
+        test_putCategory_validation(category);
+    }
+
+    @Test
+    public void putCategory_nameBlank() throws Exception {
+        final var category = new InCategory(
             "",
             null
         );
-        test_patchCategory_validation(category);
+        test_putCategory_validation(category);
     }
 
-    private void test_patchCategory_exceptionHandling(
+    private void test_putCategory_exceptionHandling(
         HttpStatus expectedStatus,
         Class<? extends Exception> exceptionClass
     ) throws Exception {
@@ -267,12 +275,12 @@ public class CategoriesControllerTests {
         Mockito
             .doThrow(exceptionClass)
             .when(categoriesService)
-            .patchCategory(Mockito.anyLong(), Mockito.any());
+            .putCategory(Mockito.anyLong(), Mockito.any());
 
         mvc
             .perform(
                 MockMvcRequestBuilders
-                    .patch("/api/v1/categories/1")
+                    .put("/api/v1/categories/1")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsBytes(category))
                     .with(
@@ -285,13 +293,13 @@ public class CategoriesControllerTests {
     }
 
     @Test
-    public void patchCategory_conflictException() throws Exception {
-        test_patchCategory_exceptionHandling(HttpStatus.CONFLICT, ConflictException.class);
+    public void putCategory_conflictException() throws Exception {
+        test_putCategory_exceptionHandling(HttpStatus.CONFLICT, ConflictException.class);
     }
 
     @Test
-    public void patchCategory_notFoundException() throws Exception {
-        test_patchCategory_exceptionHandling(HttpStatus.NOT_FOUND, NotFoundException.class);
+    public void putCategory_notFoundException() throws Exception {
+        test_putCategory_exceptionHandling(HttpStatus.NOT_FOUND, NotFoundException.class);
     }
 
     //#endregion
