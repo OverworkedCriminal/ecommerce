@@ -63,7 +63,7 @@ public class CategoriesController {
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
             @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.CATEGORY_MANAGE + "]"),
-            @ApiResponse(responseCode = "404", description = "when parent category does not exist"),
+            @ApiResponse(responseCode = "404", description = "parent category does not exist"),
             @ApiResponse(responseCode = "409", description = "category with such name already exist")
         }
     )
@@ -81,10 +81,13 @@ public class CategoriesController {
         security = @SecurityRequirement(name = BEARER),
         responses = {
             @ApiResponse(responseCode = "204", description = "success"),
-            @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
+            @ApiResponse(
+                responseCode = "400",
+                description = "any of input parameters is invalid or updating category would cause a cycle"
+            ),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
             @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.CATEGORY_MANAGE + "]"),
-            @ApiResponse(responseCode = "404", description = "category does not exist"),
+            @ApiResponse(responseCode = "404", description = "category or parent category does not exist"),
             @ApiResponse(responseCode = "409", description = "category with such name already exist")
         }
     )
@@ -106,7 +109,7 @@ public class CategoriesController {
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
             @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.CATEGORY_MANAGE + "]"),
             @ApiResponse(responseCode = "404", description = "category does not exist"),
-            @ApiResponse(responseCode = "409", description = "category cannot be removed")
+            @ApiResponse(responseCode = "409", description = "category cannot be removed because it's assigned to some product")
         }
     )
     public void deleteCategory(
