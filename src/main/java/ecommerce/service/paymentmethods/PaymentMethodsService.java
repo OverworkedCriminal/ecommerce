@@ -26,6 +26,13 @@ public class PaymentMethodsService {
     private final IUserInputSanitizer userInputSanitizer;
     private final PaymentMethodsRepository paymentMethodsRepository;
 
+    /**
+     * Find payment method by id
+     * 
+     * @param id
+     * @return found payment method
+     * @throws NotFoundException payment method does not exist or is inactive
+     */
     public PaymentMethod findByIdActive(long id) throws NotFoundException {
         final var payment = paymentMethodsRepository
             .findByIdAndActiveTrue(id)
@@ -33,6 +40,11 @@ public class PaymentMethodsService {
         return payment;
     }
 
+    /**
+     * Find all active payment methods
+     * 
+     * @return found payment methods
+     */
     public List<OutPaymentMethod> getPaymentMethods() {
         final var paymentMethodEntities = paymentMethodsRepository.findByActiveTrue();
         log.info("found payment methods count={}", paymentMethodEntities.size());
@@ -44,6 +56,13 @@ public class PaymentMethodsService {
         return paymentMethods;
     }
 
+    /**
+     * Find payment method by id
+     * 
+     * @param id
+     * @return found payment method
+     * @throws NotFoundException payment method does not exist or is inactive
+     */
     public OutPaymentMethod getPaymentMethod(long id) throws NotFoundException {
         log.trace("id={}", id);
 
@@ -54,6 +73,13 @@ public class PaymentMethodsService {
         return paymentMethod;
     }
 
+    /**
+     * Create payment method
+     * 
+     * @param inPaymentMethod
+     * @return created payment method
+     * @throws ValidationException when 'name' or 'description' is invalid
+     */
     public OutPaymentMethod postPaymentMethod(
         InPaymentMethod inPaymentMethod
     ) throws ValidationException {
@@ -67,6 +93,14 @@ public class PaymentMethodsService {
         return outPaymentMethod;
     }
 
+    /**
+     * Update part of payment method
+     * 
+     * @param id
+     * @param patch
+     * @throws NotFoundException paymentMethod does not exist or is not active
+     * @throws ValidationException 'name' or 'description' is invalid
+     */
     public void patchPaymentMethod(
         long id,
         InPaymentMethodPatch patch
@@ -90,6 +124,12 @@ public class PaymentMethodsService {
         log.info("updated payment method with id={}", id);
     }
 
+    /**
+     * Delete payment method by changing 'active' to false
+     * 
+     * @param id
+     * @throws NotFoundException payment method does not exist or is inactive
+     */
     public void deletePaymentMethod(long id) throws NotFoundException {
         log.trace("id={}", id);
 
