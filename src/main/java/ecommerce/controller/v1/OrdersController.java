@@ -86,9 +86,15 @@ public class OrdersController {
         security = @SecurityRequirement(name = BEARER),
         responses = {
             @ApiResponse(responseCode = "200", description = "success"),
-            @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
+            @ApiResponse(
+                responseCode = "400",
+                description = "any of input parameters is invalid or order contains duplicated product"
+            ),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
-            @ApiResponse(responseCode = "404", description = "any of the products or country does not exist")
+            @ApiResponse(
+                responseCode = "404",
+                description = "country, payment method or any of ordered products does not exist"
+            )
         }
     )
     public OutOrder postOrder(
@@ -107,7 +113,10 @@ public class OrdersController {
             @ApiResponse(responseCode = "204", description = "success"),
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
-            @ApiResponse(responseCode = "404", description = "any of the products or country does not exist"),
+            @ApiResponse(
+                responseCode = "404",
+                description = "order or does not exist or order does not belong to the user"
+            ),
             @ApiResponse(responseCode = "409", description = "order has already been completed")
         }
     )
@@ -129,7 +138,11 @@ public class OrdersController {
             @ApiResponse(responseCode = "204", description = "success"),
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
-            @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.ORDER_UPDATE_COMPLETED_AT + "," + AuthRoles.ORDER_UPDATE + "]"),
+            @ApiResponse(
+                responseCode = "403",
+                description = "user lacks any of the roles [" + AuthRoles.ORDER_UPDATE_COMPLETED_AT + "," + AuthRoles.ORDER_UPDATE + "]"
+            ),
+            @ApiResponse(responseCode = "404", description = "order does not exist"),
             @ApiResponse(responseCode = "409", description = "order has already been completed")
         }
     )
@@ -150,7 +163,11 @@ public class OrdersController {
             @ApiResponse(responseCode = "204", description = "success"),
             @ApiResponse(responseCode = "400", description = "any of input parameters is invalid"),
             @ApiResponse(responseCode = "401", description = "user is unauthenticated"),
-            @ApiResponse(responseCode = "403", description = "user lacks any of the roles [" + AuthRoles.ORDER_UPDATE_COMPLETED_AT + "," + AuthRoles.ORDER_UPDATE + "]"),
+            @ApiResponse(
+                responseCode = "403",
+                description = "user lacks any of the roles [" + AuthRoles.ORDER_UPDATE_COMPLETED_AT + "," + AuthRoles.ORDER_UPDATE + "]"
+            ),
+            @ApiResponse(responseCode = "404", description = "order does not exist"),
             @ApiResponse(responseCode = "409", description = "order payment has already been completed")
         }
     )
