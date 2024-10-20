@@ -1,6 +1,7 @@
 package ecommerce.service.orders;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -123,24 +124,29 @@ public class OrdersService {
         final var paymentMethodEntity = paymentMethodsService.findByIdActive(orderIn.payment().paymentMethod());
         log.info("found payment method with id={}", paymentMethodEntity.getId());
 
-        // Sorted by ID to make working with products easier
-        final var orderInProducts = orderIn.products();
-        orderInProducts.sort((a, b) -> Long.compare(a.productId(), b.productId()));
-        final var productIds = orderInProducts.stream()
+        final var productIds = orderIn.products()
+            .stream()
             .map(product -> product.productId())
             .collect(Collectors.toList());
 
-        // Sorted by ID to make working with products easier
-        final var productEntities = productsRepository.findByActiveTrueAndIdInOrderByIdAsc(productIds);
+        final var productEntities = productsRepository.findByActiveTrueAndIdIn(productIds);
         if (productEntities.size() != productIds.size()) {
             throw new NotFoundException("product not found");
         }
         log.info("found all ordered products count={}", productEntities.size());
 
+        // Sorted by ID to make working with products easier
+        final var orderInProducts = orderIn.products().stream()
+            .sorted((a, b) -> Long.compare(a.productId(), b.productId()))
+            .collect(Collectors.toList());
+        final var sortedProductEntities = productEntities.stream()
+            .sorted((a, b) -> Long.compare(a.getId(), b.getId()))
+            .collect(Collectors.toList());
+
         final var summedPrice = IntStream.range(0, orderInProducts.size())
             .mapToObj(i -> {
                 final var quantity = BigDecimal.valueOf(orderInProducts.get(i).quantity());
-                final var price = productEntities.get(i).getPrice();
+                final var price = sortedProductEntities.get(i).getPrice();
                 return price.multiply(quantity);
             })
             .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -159,7 +165,7 @@ public class OrdersService {
         var orderProductEntities = IntStream.range(0, orderInProducts.size())
             .mapToObj(i -> orderProductsMapper.intoEntity(
                 orderInProducts.get(i),
-                productEntities.get(i),
+                sortedProductEntities.get(i),
                 savedOrderEntity
             ))
             .collect(Collectors.toList());
@@ -221,8 +227,11 @@ public class OrdersService {
         final var completedAt = orderEntity.getCompletedAt();
         if (completedAt != null) {
             throw ConflictException.orderAlreadyCompleted(id);
-        } 
-        if (!update.completedAt().isAfter(orderEntity.getOrderedAt())) {
+        }
+        if (update.completedAt().isAfter(LocalDateTime.now())) {
+            throw new ValidationException("completedAt cannot be from the future");
+        }
+        if (update.completedAt().isBefore(orderEntity.getOrderedAt())) {
             throw new ValidationException("completedAt must be after orderedAt");
         }
 
@@ -252,7 +261,10 @@ public class OrdersService {
                     .formatted(id)
             );
         }
-        if (!update.completedAt().isAfter(orderEntity.getOrderedAt())) {
+        if (update.completedAt().isAfter(LocalDateTime.now())) {
+            throw new ValidationException("payment's completed at cannot be from the future");
+        }
+        if (update.completedAt().isBefore(orderEntity.getOrderedAt())) {
             throw new ValidationException("payment's completedAt must be after orderedAt");
         }
 
